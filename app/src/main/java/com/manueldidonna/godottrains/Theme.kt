@@ -14,7 +14,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.manueldidonna.jetpackcomposetemplate
+package com.manueldidonna.godottrains
 
 import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -34,7 +34,7 @@ import androidx.core.view.WindowCompat
 import dev.chrisbanes.accompanist.insets.ProvideWindowInsets
 
 @Composable
-fun JetpackComposeTemplateTheme(
+fun GodotTrainsTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable() () -> Unit
 ) {

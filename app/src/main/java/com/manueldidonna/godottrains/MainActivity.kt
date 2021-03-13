@@ -14,7 +14,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.manueldidonna.jetpackcomposetemplate
+package com.manueldidonna.godottrains
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -29,9 +29,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
-            JetpackComposeTemplateTheme {
+            GodotTrainsTheme {
                 EdgeToEdgeContent {
-                    JetpackComposeTemplate()
+                    GodotTrains()
                 }
             }
         }
@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun JetpackComposeTemplate() {
+fun GodotTrains() {
     Surface {
         Text(text = "Hello world!")
     }
