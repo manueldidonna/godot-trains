@@ -46,7 +46,10 @@ fun GodotTrainsTheme(
 }
 
 @Composable
-fun EdgeToEdgeContent(content: @Composable () -> Unit) {
+fun EdgeToEdgeContent(
+    areSystemBarsLight: Boolean = MaterialTheme.colors.isLight,
+    content: @Composable () -> Unit
+) {
     val view = LocalView.current
     val window = (LocalContext.current as Activity).window
     // window.statusBarColor = android.graphics.Color.TRANSPARENT
@@ -54,10 +57,9 @@ fun EdgeToEdgeContent(content: @Composable () -> Unit) {
     val insetsController = remember(view, window) {
         WindowCompat.getInsetsController(window, view)
     }
-    val isLightTheme = MaterialTheme.colors.isLight
     insetsController?.run {
-        isAppearanceLightNavigationBars = isLightTheme
-        isAppearanceLightStatusBars = isLightTheme
+        isAppearanceLightNavigationBars = areSystemBarsLight
+        isAppearanceLightStatusBars = areSystemBarsLight
     }
     ProvideWindowInsets(content = content)
 }

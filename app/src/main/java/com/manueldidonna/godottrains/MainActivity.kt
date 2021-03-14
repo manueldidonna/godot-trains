@@ -19,10 +19,11 @@ package com.manueldidonna.godottrains
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.core.view.WindowCompat
+import com.manueldidonna.godottrains.searchtrains.SearchTrainsScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,7 +41,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun GodotTrains() {
-    Surface {
-        Text(text = "Hello world!")
+    Surface(color = MaterialTheme.colors.background) {
+        SearchTrainsScreen()
     }
 }
