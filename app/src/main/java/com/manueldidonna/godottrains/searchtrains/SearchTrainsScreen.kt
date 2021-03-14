@@ -87,15 +87,6 @@ private fun ColumnScope.ScreenContent() {
         cardShape = MaterialTheme.shapes.medium
     )
 
-    Button(
-        onClick = { /*TODO*/ },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 16.dp, horizontal = 48.dp)
-    ) {
-        Text(text = "BROWSE HISTORY")
-    }
-
     CoilImage(
         data = R.drawable.travel_world,
         contentDescription = null,
