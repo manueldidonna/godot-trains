@@ -41,6 +41,10 @@ fun StationsDisplayCard(
     modifier: Modifier = Modifier,
     cardElevation: Dp = 1.dp,
     cardShape: Shape = MaterialTheme.shapes.medium,
+    departureStationName: String? = null,
+    arrivalStationName: String? = null,
+    onDepartureStationNameClick: () -> Unit = {},
+    onArrivalStationNameClick: () -> Unit = {}
 ) {
     Card(shape = cardShape, elevation = cardElevation, modifier = modifier) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -49,24 +53,24 @@ fun StationsDisplayCard(
                     modifier = Modifier
                         .padding(start = 24.dp, top = 8.dp, bottom = 8.dp)
                         .fillMaxWidth(),
-                    text = "Torre del Greco",
+                    text = departureStationName,
                     placeHolderText = "Departure Station",
-                    onClick = {}
+                    onClick = onDepartureStationNameClick
                 )
                 Divider(startIndent = 24.dp)
                 StationName(
                     modifier = Modifier
                         .padding(start = 24.dp, top = 8.dp, bottom = 8.dp)
                         .fillMaxWidth(),
-                    text = null,
+                    text = arrivalStationName,
                     placeHolderText = "Arrival Station",
-                    onClick = {}
+                    onClick = onArrivalStationNameClick
                 )
             }
             IconButton(
-                onClick = { /*TODO*/ },
+                onClick = { /*TODO: swap button*/ },
                 modifier = Modifier.padding(16.dp),
-                enabled = false
+                enabled = departureStationName?.isNotEmpty() == true && arrivalStationName?.isNotEmpty() == true
             ) {
                 Icon(
                     imageVector = Icons.Rounded.SwapVert,
@@ -114,7 +118,11 @@ private fun StationName(
 private fun PreviewStationsDisplay() {
     GodotTrainsTheme {
         Surface {
-            StationsDisplayCard(modifier = Modifier.padding(24.dp), cardElevation = 4.dp)
+            StationsDisplayCard(
+                modifier = Modifier.padding(24.dp),
+                cardElevation = 4.dp,
+                departureStationName = "Torre del Greco"
+            )
         }
     }
 }

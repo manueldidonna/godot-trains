@@ -20,7 +20,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,9 +30,18 @@ import com.manueldidonna.godottrains.R
 import dev.chrisbanes.accompanist.coil.CoilImage
 import dev.chrisbanes.accompanist.insets.navigationBarsPadding
 import dev.chrisbanes.accompanist.insets.statusBarsPadding
+import kotlinx.coroutines.flow.Flow
+
+interface SearchTrainsCallback {
+    val departureStationName: Flow<String?>
+    val arrivalStationName: Flow<String?>
+    fun searchDepartureStation()
+    fun searchArrivalStation()
+}
 
 @Composable
-fun SearchTrainsScreen() {
+fun SearchTrainsScreen(callback: SearchTrainsCallback) {
+    val updatedCallback by rememberUpdatedState(callback)
     Box(modifier = Modifier.fillMaxSize()) {
         GodotTrainsAppBar(
             modifier = Modifier
@@ -40,23 +49,61 @@ fun SearchTrainsScreen() {
                 .zIndex(8f)
         )
 
+        val departureStationName by updatedCallback.departureStationName.collectAsState(null)
+        val arrivalStationName by updatedCallback.arrivalStationName.collectAsState(null)
+
+        val isSearchEnabled by remember {
+            derivedStateOf {
+                !departureStationName.isNullOrEmpty() && !arrivalStationName.isNullOrEmpty()
+            }
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
-                .padding(top = 56.dp) // appbar
+                .padding(top = 56.dp) // appbar padding
                 .verticalScroll(rememberScrollState())
                 .navigationBarsPadding()
                 .padding(top = 24.dp, bottom = 96.dp)
         ) {
-            ScreenContent()
+            StationsDisplayCard(
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
+                cardElevation = 2.dp,
+                cardShape = MaterialTheme.shapes.medium,
+                arrivalStationName = arrivalStationName,
+                departureStationName = departureStationName,
+                onArrivalStationNameClick = callback::searchArrivalStation,
+                onDepartureStationNameClick = callback::searchDepartureStation
+            )
+
+            if (isSearchEnabled) {
+                DepartureDateCard(
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
+                    cardElevation = 2.dp,
+                    cardShape = MaterialTheme.shapes.medium
+                )
+
+                DepartureTimeCard(
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
+                    cardElevation = 2.dp,
+                    cardShape = MaterialTheme.shapes.medium
+                )
+            } else {
+                WelcomeVectorImage(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                )
+            }
         }
 
         SearchFloatingButton(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .navigationBarsPadding(),
-            onClick = { /*TODO*/ }
+            onClick = { /*TODO*/ },
+            enabled = isSearchEnabled
         )
     }
 }
@@ -80,36 +127,17 @@ private fun GodotTrainsAppBar(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun ColumnScope.ScreenContent() {
-    StationsDisplayCard(
-        modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
-        cardElevation = 2.dp,
-        cardShape = MaterialTheme.shapes.medium
-    )
-
+private fun WelcomeVectorImage(modifier: Modifier) {
     CoilImage(
         data = R.drawable.travel_world,
         contentDescription = null,
-        modifier = Modifier
-            .weight(1f)
-            .fillMaxWidth()
+        modifier = modifier
     )
-
-//    DepartureDateCard(
-//        modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
-//        cardElevation = 2.dp,
-//        cardShape = MaterialTheme.shapes.medium
-//    )
-//
-//    DepartureTimeCard(
-//        modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
-//        cardElevation = 2.dp,
-//        cardShape = MaterialTheme.shapes.medium
-//    )
 }
 
 @Composable
-private fun SearchFloatingButton(modifier: Modifier, onClick: () -> Unit) {
+private fun SearchFloatingButton(modifier: Modifier, enabled: Boolean, onClick: () -> Unit) {
+    if (!enabled) return
     ExtendedFloatingActionButton(
         modifier = modifier
             .fillMaxWidth()

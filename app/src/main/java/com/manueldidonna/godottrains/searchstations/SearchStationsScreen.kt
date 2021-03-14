@@ -39,7 +39,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.manueldidonna.godottrains.EdgeToEdgeContent
 import com.manueldidonna.godottrains.GodotTrainsTheme
+import dev.chrisbanes.accompanist.insets.navigationBarsHeight
 import dev.chrisbanes.accompanist.insets.statusBarsPadding
 import kotlinx.coroutines.flow.Flow
 
@@ -47,6 +49,7 @@ interface SearchStationsCallback {
     val recentSearchResults: Flow<List<String>>
     suspend fun getStationNamesByQuery(query: String): List<String>
     fun selectStationByName(stationName: String)
+    fun cancelSearchAndGoBack()
 }
 
 @Composable
@@ -72,6 +75,7 @@ fun SearchStationsScreen(callback: SearchStationsCallback) {
             isLoading = isLoading,
             query = query,
             onQueryChange = setQuery,
+            onBackArrowClick = updatedCallback::cancelSearchAndGoBack
         )
 
         if (recentSearchResults.isNotEmpty()) {
@@ -79,15 +83,17 @@ fun SearchStationsScreen(callback: SearchStationsCallback) {
             Divider()
         }
 
-        LazyColumn(contentPadding = remember { PaddingValues(top = 8.dp) }) {
-            items(stationNames) { stationName ->
-                SearchResultEntity(
-                    modifier = Modifier.padding(horizontal = 24.dp),
-                    stationName = stationName,
-                    onClick = { updatedCallback.selectStationByName(stationName) }
-                )
+        if (stationNames.isNotEmpty())
+            LazyColumn(contentPadding = remember { PaddingValues(top = 8.dp) }) {
+                items(stationNames) { stationName ->
+                    SearchResultEntity(
+                        modifier = Modifier.padding(horizontal = 24.dp),
+                        stationName = stationName,
+                        onClick = { updatedCallback.selectStationByName(stationName) }
+                    )
+                }
+                item { Spacer(modifier = Modifier.navigationBarsHeight()) }
             }
-        }
     }
 }
 
@@ -95,7 +101,8 @@ fun SearchStationsScreen(callback: SearchStationsCallback) {
 private fun SearchToolbar(
     isLoading: Boolean,
     query: String,
-    onQueryChange: (String) -> Unit
+    onQueryChange: (String) -> Unit = {},
+    onBackArrowClick: () -> Unit = {}
 ) {
     Surface(
         color = MaterialTheme.colors.surface,
@@ -110,7 +117,7 @@ private fun SearchToolbar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
-                onClick = { /*TODO*/ },
+                onClick = onBackArrowClick,
                 modifier = Modifier.padding(start = 4.dp, end = 12.dp)
             ) {
                 Icon(Icons.Rounded.ArrowBack, contentDescription = "go back")
@@ -223,7 +230,11 @@ private fun SearchResultEntity(modifier: Modifier, stationName: String, onClick:
 @Composable
 private fun PreviewSearchToolbar() {
     GodotTrainsTheme {
-        SearchToolbar(isLoading = true, query = "", onQueryChange = { /*TODO*/ })
+        EdgeToEdgeContent {
+            Surface {
+                SearchToolbar(isLoading = true, query = "")
+            }
+        }
     }
 }
 
@@ -231,9 +242,11 @@ private fun PreviewSearchToolbar() {
 @Composable
 private fun PreviewRecentSearchResults() {
     GodotTrainsTheme {
-        RecentSearchResults(
-            recentResults = listOf("Torre del Greco", "Napoli P. Garibaldi"),
-            onClick = {}
-        )
+        Surface {
+            RecentSearchResults(
+                recentResults = listOf("Torre del Greco", "Napoli P. Garibaldi"),
+                onClick = {}
+            )
+        }
     }
 }
