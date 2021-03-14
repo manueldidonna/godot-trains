@@ -22,6 +22,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
@@ -29,31 +30,61 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Place
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.manueldidonna.godottrains.GodotTrainsTheme
 import dev.chrisbanes.accompanist.insets.statusBarsPadding
+import kotlinx.coroutines.flow.Flow
+
+interface SearchStationsCallback {
+    val recentSearchResults: Flow<List<String>>
+    suspend fun getStationNamesByQuery(query: String): List<String>
+    fun selectStationByName(stationName: String)
+}
 
 @Composable
-fun SearchStationsScreen() {
+fun SearchStationsScreen(callback: SearchStationsCallback) {
+    val updatedCallback by rememberUpdatedState(callback)
+
     Column(modifier = Modifier.fillMaxSize()) {
+        val recentSearchResults by updatedCallback
+            .recentSearchResults
+            .collectAsState(emptyList())
+
         val (query, setQuery) = remember { mutableStateOf("") }
-        SearchToolbar(query = query, onQueryChange = setQuery)
-        RecentSearchResults()
-        Divider()
+
+        var isLoading by remember { mutableStateOf(false) }
+
+        val stationNames by produceState(emptyList<String>(), key1 = query) {
+            isLoading = query.isNotBlank()
+            value = updatedCallback.getStationNamesByQuery(query)
+            isLoading = false
+        }
+
+        SearchToolbar(
+            isLoading = isLoading,
+            query = query,
+            onQueryChange = setQuery,
+        )
+
+        if (recentSearchResults.isNotEmpty()) {
+            RecentSearchResults(recentResults = recentSearchResults, onClick = setQuery)
+            Divider()
+        }
+
         LazyColumn(contentPadding = remember { PaddingValues(top = 8.dp) }) {
-            items(5) {
+            items(stationNames) { stationName ->
                 SearchResultEntity(
                     modifier = Modifier.padding(horizontal = 24.dp),
-                    stationName = if (it % 2 == 0) "Torre del Greco" else "Napoli Piazza Garibaldi",
-                    onClick = { /*TODO*/ }
+                    stationName = stationName,
+                    onClick = { updatedCallback.selectStationByName(stationName) }
                 )
             }
         }
@@ -61,7 +92,11 @@ fun SearchStationsScreen() {
 }
 
 @Composable
-private fun SearchToolbar(query: String, onQueryChange: (String) -> Unit) {
+private fun SearchToolbar(
+    isLoading: Boolean,
+    query: String,
+    onQueryChange: (String) -> Unit
+) {
     Surface(
         color = MaterialTheme.colors.surface,
         elevation = AppBarDefaults.TopAppBarElevation,
@@ -104,14 +139,23 @@ private fun SearchToolbar(query: String, onQueryChange: (String) -> Unit) {
                     keyboardOptions = remember {
                         KeyboardOptions(autoCorrect = false, imeAction = ImeAction.Search)
                     },
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
+
+            if (isLoading)
+                CircularProgressIndicator(
+                    strokeWidth = 4.dp,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .size(24.dp),
+                )
         }
     }
 }
 
 @Composable
-private fun RecentSearchResults() {
+private fun RecentSearchResults(recentResults: List<String>, onClick: (String) -> Unit) {
     Column {
         Text(
             text = "Recent search results",
@@ -123,8 +167,11 @@ private fun RecentSearchResults() {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding = remember { PaddingValues(start = 24.dp, end = 24.dp) }
         ) {
-            items(4) {
-                RecentSearchCarouselEntity("Torre del Greco", {})
+            items(recentResults) { result ->
+                RecentSearchCarouselEntity(
+                    query = result,
+                    onClick = { onClick(result) }
+                )
             }
         }
         Spacer(modifier = Modifier.height(24.dp))
@@ -169,5 +216,24 @@ private fun SearchResultEntity(modifier: Modifier, stationName: String, onClick:
         )
         Spacer(Modifier.width(24.dp))
         Text(text = stationName, style = MaterialTheme.typography.body1)
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewSearchToolbar() {
+    GodotTrainsTheme {
+        SearchToolbar(isLoading = true, query = "", onQueryChange = { /*TODO*/ })
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewRecentSearchResults() {
+    GodotTrainsTheme {
+        RecentSearchResults(
+            recentResults = listOf("Torre del Greco", "Napoli P. Garibaldi"),
+            onClick = {}
+        )
     }
 }

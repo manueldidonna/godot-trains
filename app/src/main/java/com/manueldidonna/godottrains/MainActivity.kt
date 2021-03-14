@@ -17,13 +17,20 @@
 package com.manueldidonna.godottrains
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.core.view.WindowCompat
-import com.manueldidonna.godottrains.searchtrains.SearchTrainsScreen
+import com.manueldidonna.godottrains.searchstations.SearchStationsCallback
+import com.manueldidonna.godottrains.searchstations.SearchStationsScreen
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.isActive
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,6 +49,32 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun GodotTrains() {
     Surface(color = MaterialTheme.colors.background) {
-        SearchTrainsScreen()
+        val fakeSearchStationsCallback = remember {
+            object : SearchStationsCallback {
+                override suspend fun getStationNamesByQuery(query: String): List<String> {
+                    if (query.isEmpty()) return emptyList()
+                    return coroutineScope {
+                        delay(400L) // delay the request
+                        Log.d("station names", "scope for $query is active: $isActive")
+                        delay(500L) // simulate web request delay
+                        Log.d("station names", "after delay for $query")
+                        return@coroutineScope List(5) { "$query $it" }
+                    }
+                }
+
+                override fun selectStationByName(stationName: String) {
+
+                }
+
+                override val recentSearchResults = flowOf(
+                    listOf(
+                        "Torre del Greco",
+                        "Napoli Piazza Garibaldi",
+                        "Napoli MonteSanto"
+                    )
+                )
+            }
+        }
+        SearchStationsScreen(fakeSearchStationsCallback)
     }
 }
