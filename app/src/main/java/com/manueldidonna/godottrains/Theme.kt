@@ -74,7 +74,7 @@ private val DarkColorPalette = darkColors(
 
 private val LightColorPalette = lightColors(
     primary = Color(0xff073042),
-    primaryVariant = Color(0xff073042),
+    primaryVariant = Color(0xff37596d),
     secondary = Color(0xff3ddc84)
 )
 
