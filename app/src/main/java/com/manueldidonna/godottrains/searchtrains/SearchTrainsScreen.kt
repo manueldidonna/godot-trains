@@ -35,8 +35,10 @@ import kotlinx.coroutines.flow.Flow
 interface SearchTrainsCallback {
     val departureStationName: Flow<String?>
     val arrivalStationName: Flow<String?>
+    val departureTimeInMinutes: Flow<Int>
     fun searchDepartureStation()
     fun searchArrivalStation()
+    fun setDepartureTimeInMinutes(timeInMinutes: Int)
 }
 
 @Composable
@@ -51,6 +53,7 @@ fun SearchTrainsScreen(callback: SearchTrainsCallback) {
 
         val departureStationName by updatedCallback.departureStationName.collectAsState(null)
         val arrivalStationName by updatedCallback.arrivalStationName.collectAsState(null)
+        val departureTimeInMinutes by updatedCallback.departureTimeInMinutes.collectAsState(0)
 
         val isSearchEnabled by remember {
             derivedStateOf {
@@ -87,7 +90,9 @@ fun SearchTrainsScreen(callback: SearchTrainsCallback) {
                 DepartureTimeCard(
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
                     cardElevation = 2.dp,
-                    cardShape = MaterialTheme.shapes.medium
+                    cardShape = MaterialTheme.shapes.medium,
+                    selectedTimeInMinutes = departureTimeInMinutes,
+                    onTimeChange = updatedCallback::setDepartureTimeInMinutes
                 )
             } else {
                 WelcomeVectorImage(

@@ -22,14 +22,19 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 class TrainsViewModel : ViewModel() {
 
     data class State(
         val departureStationName: String? = null,
         val arrivalStationName: String? = null,
+        val departureTimeInMinutes: Int = Clock.System.now()
+            .toLocalDateTime(TimeZone.currentSystemDefault())
+            .run { hour * 60 + minute }
         // val departureDay
-        // val departureTime
     )
 
     private val _stateFlow = MutableStateFlow(State())
@@ -43,6 +48,10 @@ class TrainsViewModel : ViewModel() {
 
     fun setDepartureStationName(stationName: String) {
         _stateFlow.value = _stateFlow.value.copy(departureStationName = stationName)
+    }
+
+    fun setDepartureTimeInMinutes(timeInMinutes: Int) {
+        _stateFlow.value = _stateFlow.value.copy(departureTimeInMinutes = timeInMinutes)
     }
 
     // TODO: implement this function

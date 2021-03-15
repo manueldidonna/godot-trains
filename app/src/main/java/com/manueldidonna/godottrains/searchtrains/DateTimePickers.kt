@@ -26,6 +26,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -52,12 +54,18 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.manueldidonna.godottrains.GodotTrainsTheme
+import kotlin.math.abs
+
+@Stable
+private val AllowedTimesInMinutes = List(33) { (it + 12) * 30 }
 
 @Composable
 fun DepartureTimeCard(
     modifier: Modifier = Modifier,
     cardElevation: Dp = 1.dp,
     cardShape: Shape = MaterialTheme.shapes.medium,
+    selectedTimeInMinutes: Int = 0,
+    onTimeChange: (Int) -> Unit = {}
 ) {
     Card(elevation = cardElevation, modifier = modifier, shape = cardShape) {
         Column {
@@ -66,15 +74,26 @@ fun DepartureTimeCard(
                 icon = Icons.Rounded.Timelapse,
                 text = "Departure Time"
             )
+
+            val adjustedTimeInMinutes = remember(selectedTimeInMinutes) {
+                AllowedTimesInMinutes.minByOrNull { abs(selectedTimeInMinutes - it) }
+                    ?: AllowedTimesInMinutes.first()
+            }
+
+            val lazyListState = rememberLazyListState(
+                initialFirstVisibleItemIndex = AllowedTimesInMinutes.indexOf(adjustedTimeInMinutes)
+            )
+
             LazyRow(
                 contentPadding = remember { PaddingValues(horizontal = 24.dp, vertical = 32.dp) },
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                state = lazyListState
             ) {
-                items(10) {
+                items(AllowedTimesInMinutes) { minutes ->
                     TimeCarouselEntry(
-                        timeValue = "19 : 00",
-                        selected = it == 0,
-                        onClick = { /*TODO*/ }
+                        timeValue = String.format("%02d : %02d", minutes / 60, minutes % 60),
+                        selected = adjustedTimeInMinutes == minutes,
+                        onClick = { onTimeChange(minutes) }
                     )
                 }
             }
@@ -87,13 +106,18 @@ private fun TimeCarouselEntry(timeValue: String, selected: Boolean, onClick: () 
     val colors = MaterialTheme.colors
     val shape = MaterialTheme.shapes.small
     val backgroundColor by animateColorAsState(
-        targetValue = if (selected) colors.primary else Color.Transparent
+        targetValue = if (selected) colors.primary else Color.Transparent,
+        animationSpec = tween(durationMillis = 350)
+    )
+    val textColor by animateColorAsState(
+        targetValue = if (selected) colors.onPrimary else colors.onSurface,
+        animationSpec = tween(durationMillis = 350)
     )
     Text(
         text = timeValue,
         style = MaterialTheme.typography.body1,
         fontWeight = FontWeight.Medium,
-        color = contentColorFor(backgroundColor),
+        color = textColor,
         modifier = Modifier
             .clip(shape)
             .selectable(

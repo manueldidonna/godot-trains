@@ -65,12 +65,19 @@ private fun createSearchTrainsCallback(
     override val departureStationName: Flow<String?> =
         trainsViewModel.stateFlow.map { it.departureStationName }
 
+    override val departureTimeInMinutes: Flow<Int> =
+        trainsViewModel.stateFlow.map { it.departureTimeInMinutes }
+
     override fun searchArrivalStation() {
         navController.navigate(SearchStations.createRouteFromArguments(isDeparture = false))
     }
 
     override fun searchDepartureStation() {
         navController.navigate(SearchStations.createRouteFromArguments(isDeparture = true))
+    }
+
+    override fun setDepartureTimeInMinutes(timeInMinutes: Int) {
+        trainsViewModel.setDepartureTimeInMinutes(timeInMinutes)
     }
 }
 
