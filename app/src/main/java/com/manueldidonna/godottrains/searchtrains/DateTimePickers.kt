@@ -99,7 +99,9 @@ private fun TimeCarouselEntry(timeValue: String, selected: Boolean, onClick: () 
             .selectable(
                 selected = selected,
                 onClick = onClick,
-                indication = rememberRipple(color = colors.primary),
+                indication = rememberRipple(
+                    color = if (selected) colors.onPrimary else colors.primary
+                ),
                 interactionSource = remember { MutableInteractionSource() }
             )
             .border(BorderStroke(2.dp, colors.primary), shape)
