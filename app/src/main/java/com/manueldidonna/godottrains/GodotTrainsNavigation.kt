@@ -29,6 +29,7 @@ import com.manueldidonna.godottrains.searchtrains.SearchTrainsCallback
 import com.manueldidonna.godottrains.searchtrains.SearchTrainsScreen
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.datetime.LocalDate
 
 @Composable
 fun GodotTrainsNavigation() {
@@ -68,6 +69,9 @@ private fun createSearchTrainsCallback(
     override val departureTimeInMinutes: Flow<Int> =
         trainsViewModel.stateFlow.map { it.departureTimeInMinutes }
 
+    override val departureDate: Flow<LocalDate> =
+        trainsViewModel.stateFlow.map { it.departureDate }
+
     override fun searchArrivalStation() {
         navController.navigate(SearchStations.createRouteFromArguments(isDeparture = false))
     }
@@ -78,6 +82,10 @@ private fun createSearchTrainsCallback(
 
     override fun setDepartureTimeInMinutes(timeInMinutes: Int) {
         trainsViewModel.setDepartureTimeInMinutes(timeInMinutes)
+    }
+
+    override fun setDepartureDate(localDate: LocalDate) {
+        trainsViewModel.setDepartureDate(localDate)
     }
 }
 

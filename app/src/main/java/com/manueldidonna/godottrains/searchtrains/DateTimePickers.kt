@@ -46,6 +46,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.text.font.FontWeight
@@ -54,6 +55,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.manueldidonna.godottrains.GodotTrainsTheme
+import kotlinx.datetime.*
+import kotlinx.datetime.TimeZone
+import java.time.format.TextStyle
+import java.util.*
 import kotlin.math.abs
 
 @Stable
@@ -139,7 +144,17 @@ fun DepartureDateCard(
     modifier: Modifier = Modifier,
     cardElevation: Dp = 1.dp,
     cardShape: Shape = MaterialTheme.shapes.medium,
+    selectedLocalDate: LocalDate,
+    onLocalDateChange: (LocalDate) -> Unit = {}
 ) {
+    val configuration = LocalConfiguration.current
+    val locale = remember(configuration) { configuration.locales.get(0) }
+
+    val availableDays = remember {
+        val today = Clock.System.todayAt(TimeZone.currentSystemDefault())
+        List(7) { today.plus(it, DateTimeUnit.DAY) }
+    }
+
     Card(elevation = cardElevation, shape = cardShape, modifier = modifier) {
         Column {
             CardHeader(
@@ -148,18 +163,36 @@ fun DepartureDateCard(
                 text = "Departure Day"
             )
 
-            DepartureDateTabRow(selectedIndex = 0) {
-                repeat(8) {
+            val selectedLocalDateIndex = remember(selectedLocalDate) {
+                val index = availableDays.indexOf(selectedLocalDate)
+                require(index >= 0) { "The selected date is not allowed " }
+                return@remember index
+            }
+
+            DepartureDateTabRow(selectedIndex = selectedLocalDateIndex) {
+                availableDays.forEachIndexed { index, localDate ->
                     Tab(
-                        selected = it == 0,
-                        onClick = { /*TODO*/ },
-                        text = { Text(text = "Wed 22") },
+                        selected = index == selectedLocalDateIndex,
+                        onClick = { onLocalDateChange(localDate) },
+                        text = { Text(text = localDate.getDisplayName(locale)) },
                         modifier = Modifier.height(64.dp),
                     )
                 }
             }
         }
     }
+}
+
+@OptIn(ExperimentalStdlibApi::class)
+@Stable
+@Composable
+private fun LocalDate.getDisplayName(locale: Locale): String {
+    val dayName = remember(dayOfWeek) {
+        dayOfWeek
+            .getDisplayName(TextStyle.SHORT, locale)
+            .replaceFirstChar { it.uppercaseChar() }
+    }
+    return "$dayName $dayOfMonth"
 }
 
 @Composable
@@ -228,7 +261,10 @@ private fun PreviewDateTimePickers() {
     GodotTrainsTheme {
         Surface {
             Column {
-                DepartureDateCard(modifier = Modifier.padding(24.dp))
+                DepartureDateCard(
+                    modifier = Modifier.padding(24.dp),
+                    selectedLocalDate = Clock.System.todayAt(TimeZone.currentSystemDefault())
+                )
                 DepartureTimeCard(modifier = Modifier.padding(24.dp))
             }
         }

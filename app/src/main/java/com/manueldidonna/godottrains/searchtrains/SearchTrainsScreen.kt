@@ -31,14 +31,20 @@ import dev.chrisbanes.accompanist.coil.CoilImage
 import dev.chrisbanes.accompanist.insets.navigationBarsPadding
 import dev.chrisbanes.accompanist.insets.statusBarsPadding
 import kotlinx.coroutines.flow.Flow
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayAt
 
 interface SearchTrainsCallback {
     val departureStationName: Flow<String?>
     val arrivalStationName: Flow<String?>
     val departureTimeInMinutes: Flow<Int>
+    val departureDate: Flow<LocalDate>
     fun searchDepartureStation()
     fun searchArrivalStation()
     fun setDepartureTimeInMinutes(timeInMinutes: Int)
+    fun setDepartureDate(localDate: LocalDate)
 }
 
 @Composable
@@ -54,6 +60,9 @@ fun SearchTrainsScreen(callback: SearchTrainsCallback) {
         val departureStationName by updatedCallback.departureStationName.collectAsState(null)
         val arrivalStationName by updatedCallback.arrivalStationName.collectAsState(null)
         val departureTimeInMinutes by updatedCallback.departureTimeInMinutes.collectAsState(0)
+        val departureDate by updatedCallback.departureDate.collectAsState(
+            initial = Clock.System.todayAt(TimeZone.currentSystemDefault())
+        )
 
         val isSearchEnabled by remember {
             derivedStateOf {
@@ -84,7 +93,9 @@ fun SearchTrainsScreen(callback: SearchTrainsCallback) {
                 DepartureDateCard(
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
                     cardElevation = 2.dp,
-                    cardShape = MaterialTheme.shapes.medium
+                    cardShape = MaterialTheme.shapes.medium,
+                    selectedLocalDate = departureDate,
+                    onLocalDateChange = updatedCallback::setDepartureDate
                 )
 
                 DepartureTimeCard(
