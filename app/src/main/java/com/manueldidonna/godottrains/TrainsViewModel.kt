@@ -17,8 +17,7 @@
 package com.manueldidonna.godottrains
 
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
+import com.manueldidonna.godottrains.network.LeFrecceApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -58,12 +57,7 @@ class TrainsViewModel : ViewModel() {
 
     // TODO: implement this function
     suspend fun getStationNamesByQuery(query: String): List<String> {
-        if (query.isEmpty()) return emptyList()
-        return coroutineScope {
-            delay(400L) // delay the request
-            delay(500L) // simulate web request delay
-            return@coroutineScope List(5) { "$query $it" }
-        }
+        return LeFrecceApi.Ktor.getStationsByPartialName(query)
     }
 
     // TODO: save results to the disk with jetpack DataStore

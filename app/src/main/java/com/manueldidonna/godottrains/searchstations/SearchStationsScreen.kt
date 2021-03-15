@@ -85,7 +85,7 @@ fun SearchStationsScreen(callback: SearchStationsCallback) {
 
         if (stationNames.isNotEmpty())
             LazyColumn(contentPadding = remember { PaddingValues(top = 8.dp) }) {
-                items(stationNames) { stationName ->
+                items(stationNames, key = { it }) { stationName ->
                     SearchResultEntity(
                         modifier = Modifier.padding(horizontal = 24.dp),
                         stationName = stationName,

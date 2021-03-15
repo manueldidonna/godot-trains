@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.4.30'
 }
 
 android {
@@ -87,6 +88,11 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.3"
     implementation "org.jetbrains.kotlinx:kotlinx-datetime:0.1.1"
+
+    implementation "io.ktor:ktor-client-core:1.5.2"
+    implementation "io.ktor:ktor-client-okhttp:1.5.2"
+
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.1.0"
 
     implementation "dev.chrisbanes.accompanist:accompanist-insets:0.6.2"
     implementation "dev.chrisbanes.accompanist:accompanist-coil:0.6.2"

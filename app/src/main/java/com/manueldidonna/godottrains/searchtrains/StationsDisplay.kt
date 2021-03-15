@@ -69,7 +69,7 @@ fun StationsDisplayCard(
             }
             IconButton(
                 onClick = { /*TODO: swap button*/ },
-                modifier = Modifier.padding(16.dp),
+                modifier = Modifier.padding(8.dp),
                 enabled = departureStationName?.isNotEmpty() == true && arrivalStationName?.isNotEmpty() == true
             ) {
                 Icon(
@@ -95,13 +95,13 @@ private fun StationName(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = modifier
-                .height(56.dp)
                 .clip(MaterialTheme.shapes.small)
                 .clickable(
                     onClick = onClick,
                     interactionSource = remember { MutableInteractionSource() },
                     indication = rememberRipple(color = MaterialTheme.colors.primary)
                 )
+                .padding(vertical = 16.dp)
         ) {
             Icon(
                 imageVector = Icons.Rounded.Place,
