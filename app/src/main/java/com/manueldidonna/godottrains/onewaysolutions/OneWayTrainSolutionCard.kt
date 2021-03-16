@@ -51,8 +51,7 @@ fun OneWayTrainSolutionCard(
         shape = cardShape,
         modifier = modifier,
         elevation = cardElevation,
-        backgroundColor = MaterialTheme.colors.primary,
-        contentColor = MaterialTheme.colors.onPrimary// .copy(alpha = ContentAlpha.medium)
+        backgroundColor = MaterialTheme.colors.primarySurface,
     ) {
         Column {
             Row(
@@ -63,7 +62,7 @@ fun OneWayTrainSolutionCard(
                 Spacer(Modifier.weight(1f))
                 SolutionPrice(priceInEuro = oneWaySolution.priceInEuro)
             }
-            Divider(color = MaterialTheme.colors.onPrimary.copy(alpha = 0.12f))
+            Divider(color = LocalContentColor.current.copy(alpha = 0.12f))
             SolutionsTimeInfo(
                 modifier = Modifier
                     .padding(horizontal = 24.dp, vertical = 16.dp)
@@ -143,17 +142,24 @@ private fun SolutionPrice(modifier: Modifier = Modifier, priceInEuro: Double) {
 private fun PreviewTrainSolutionDetails() {
     GodotTrainsTheme(darkTheme = false) {
         Surface {
+            val solution = OneWaySolution(
+                trains = listOf(Train("MET 21300")),
+                departureDateTime = Clock.System.now()
+                    .toLocalDateTime(TimeZone.currentSystemDefault()),
+                priceInEuro = 2.20,
+                durationInMinutes = 21
+            )
             Column {
                 OneWayTrainSolutionCard(
                     modifier = Modifier.padding(8.dp),
-                    oneWaySolution = OneWaySolution(
-                        trains = listOf(Train("MET 21300")),
-                        departureDateTime = Clock.System.now()
-                            .toLocalDateTime(TimeZone.currentSystemDefault()),
-                        priceInEuro = 2.20,
-                        durationInMinutes = 21
-                    )
+                    oneWaySolution = solution
                 )
+                GodotTrainsTheme(darkTheme = true) {
+                    OneWayTrainSolutionCard(
+                        modifier = Modifier.padding(8.dp),
+                        oneWaySolution = solution
+                    )
+                }
             }
         }
     }

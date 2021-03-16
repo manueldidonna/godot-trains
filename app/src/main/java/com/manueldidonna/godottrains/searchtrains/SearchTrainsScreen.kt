@@ -81,7 +81,7 @@ fun SearchTrainsScreen(callback: SearchTrainsCallback) {
                 .padding(top = 24.dp, bottom = 96.dp)
         ) {
             StationsDisplayCard(
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
                 cardElevation = 2.dp,
                 cardShape = MaterialTheme.shapes.medium,
                 arrivalStationName = arrivalStationName,
@@ -92,7 +92,7 @@ fun SearchTrainsScreen(callback: SearchTrainsCallback) {
 
             if (isSearchEnabled) {
                 DepartureDateCard(
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
                     cardElevation = 2.dp,
                     cardShape = MaterialTheme.shapes.medium,
                     selectedLocalDate = departureDate,
@@ -100,7 +100,7 @@ fun SearchTrainsScreen(callback: SearchTrainsCallback) {
                 )
 
                 DepartureTimeCard(
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
                     cardElevation = 2.dp,
                     cardShape = MaterialTheme.shapes.medium,
                     selectedTimeInMinutes = departureTimeInMinutes,

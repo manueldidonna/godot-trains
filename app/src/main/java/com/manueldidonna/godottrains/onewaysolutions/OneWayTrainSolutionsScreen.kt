@@ -92,7 +92,7 @@ fun OneWayTrainSolutionsScreen(callback: OneWayTrainSolutionsCallback) {
                 )
             } else {
                 OneWaySolutionsList(
-                    contentPadding = remember { PaddingValues(top = 16.dp, bottom = 24.dp) },
+                    contentPadding = remember { PaddingValues(top = 16.dp, bottom = 32.dp) },
                     oneWaySolutionsGroupedByDay = oneWaySolutionsGroupedByDay,
                     isLoadingNextSolutions = isLoadingNextSolutions,
                     loadNextOneWaySolutions = {

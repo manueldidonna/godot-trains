@@ -51,7 +51,7 @@ fun StationsDisplayCard(
             Column(modifier = Modifier.weight(1f)) {
                 StationName(
                     modifier = Modifier
-                        .padding(start = 24.dp, top = 8.dp, bottom = 8.dp)
+                        .padding(start = 24.dp, top = 16.dp, bottom = 8.dp)
                         .fillMaxWidth(),
                     text = departureStationName,
                     placeHolderText = "Departure Station",
@@ -60,7 +60,7 @@ fun StationsDisplayCard(
                 Divider(startIndent = 24.dp)
                 StationName(
                     modifier = Modifier
-                        .padding(start = 24.dp, top = 8.dp, bottom = 8.dp)
+                        .padding(start = 24.dp, top = 8.dp, bottom = 16.dp)
                         .fillMaxWidth(),
                     text = arrivalStationName,
                     placeHolderText = "Arrival Station",
@@ -90,7 +90,7 @@ private fun StationName(
     onClick: () -> Unit
 ) {
     val textToShow = if (text.isNullOrEmpty()) placeHolderText else text
-    val contentAlpha = if (text.isNullOrEmpty()) ContentAlpha.disabled else ContentAlpha.medium
+    val contentAlpha = if (text.isNullOrEmpty()) ContentAlpha.disabled else ContentAlpha.high
     CompositionLocalProvider(LocalContentAlpha provides contentAlpha) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -106,6 +106,7 @@ private fun StationName(
             Icon(
                 imageVector = Icons.Rounded.Place,
                 contentDescription = "station location icon",
+                tint = LocalContentColor.current.copy(alpha = ContentAlpha.medium)
             )
             Spacer(Modifier.width(20.dp))
             Text(text = textToShow, style = MaterialTheme.typography.body1)

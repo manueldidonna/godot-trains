@@ -103,12 +103,14 @@ private fun CardHeader(modifier: Modifier, icon: ImageVector, text: String) {
 
 @Composable
 private fun DepartureDateTabRow(selectedIndex: Int, tabs: @Composable () -> Unit) {
+    val colors = MaterialTheme.colors
     ScrollableTabRow(
         selectedTabIndex = selectedIndex,
         divider = {},
         edgePadding = 24.dp,
-        backgroundColor = MaterialTheme.colors.primary,
-        contentColor = MaterialTheme.colors.onPrimary,
+        backgroundColor = colors.primarySurface,
+        contentColor = if(colors.isLight) colors.onPrimary else colors.primary,
+       // contentColor = MaterialTheme.colors.onPrimary,
         indicator = { tapPositions ->
             Box(
                 Modifier
