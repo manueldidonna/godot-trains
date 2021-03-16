@@ -17,6 +17,7 @@
 package com.manueldidonna.godottrains.searchtrains
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -41,7 +42,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -108,16 +108,20 @@ private fun TimeCarouselEntry(timeValue: String, selected: Boolean, onClick: () 
     val shape = MaterialTheme.shapes.small
     val backgroundColor by animateColorAsState(
         targetValue = if (selected) colors.primary else Color.Transparent,
-        animationSpec = tween(durationMillis = 350)
+        animationSpec = tween(durationMillis = 450)
     )
     val textColor by animateColorAsState(
-        targetValue = if (selected) colors.onPrimary else colors.onSurface,
-        animationSpec = tween(durationMillis = 350)
+        targetValue = if (selected) colors.onPrimary else colors.onSurface.copy(alpha = ContentAlpha.medium),
+        animationSpec = tween(durationMillis = 450)
+    )
+    val borderStrokeWidth by animateDpAsState(
+        targetValue = if (selected) 4.dp else 2.dp,
+        animationSpec = tween(durationMillis = 450)
     )
     Text(
         text = timeValue,
-        style = MaterialTheme.typography.body1,
-        fontWeight = FontWeight.Medium,
+        style = MaterialTheme.typography.button,
+        // fontWeight = FontWeight.Bold,
         color = textColor,
         modifier = Modifier
             .clip(shape)
@@ -129,8 +133,14 @@ private fun TimeCarouselEntry(timeValue: String, selected: Boolean, onClick: () 
                 ),
                 interactionSource = remember { MutableInteractionSource() }
             )
-            .border(BorderStroke(2.dp, colors.primary), shape)
             .background(color = backgroundColor, shape = shape)
+            .border(
+                border = BorderStroke(
+                    width = borderStrokeWidth,
+                    color = textColor.copy(alpha = ContentAlpha.medium)
+                ),
+                shape = shape
+            )
             .padding(horizontal = 20.dp, vertical = 16.dp)
     )
 }

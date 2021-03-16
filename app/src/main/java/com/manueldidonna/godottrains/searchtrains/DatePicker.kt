@@ -79,12 +79,19 @@ fun DepartureDateCard(
             }
 
             DepartureDateTabRow(selectedIndex = selectedLocalDateIndex) {
+                val colors = MaterialTheme.colors
+                val selectedContentColor = if (colors.isLight) colors.onPrimary else colors.primary
+                val unselectedContentColor =
+                    if(colors.isLight) colors.onPrimary.copy(alpha = ContentAlpha.medium)
+                    else colors.onSurface.copy(alpha = ContentAlpha.medium)
                 availableDays.forEachIndexed { index, localDate ->
                     Tab(
                         selected = index == selectedLocalDateIndex,
                         onClick = { onLocalDateChange(localDate) },
                         text = { Text(text = localDate.getDisplayName(locale)) },
                         modifier = Modifier.height(64.dp),
+                        selectedContentColor = selectedContentColor,
+                        unselectedContentColor = unselectedContentColor
                     )
                 }
             }
@@ -109,8 +116,8 @@ private fun DepartureDateTabRow(selectedIndex: Int, tabs: @Composable () -> Unit
         divider = {},
         edgePadding = 24.dp,
         backgroundColor = colors.primarySurface,
-        contentColor = if(colors.isLight) colors.onPrimary else colors.primary,
-       // contentColor = MaterialTheme.colors.onPrimary,
+        contentColor = if (colors.isLight) colors.onPrimary else colors.primary,
+        // contentColor = MaterialTheme.colors.onPrimary,
         indicator = { tapPositions ->
             Box(
                 Modifier
