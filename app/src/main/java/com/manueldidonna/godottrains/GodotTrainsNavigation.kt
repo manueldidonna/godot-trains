@@ -101,6 +101,10 @@ private fun createSearchTrainsCallback(
     override fun searchOneWaySolutions() {
         navController.navigate(OneWayTrainSolutionsRoute)
     }
+
+    override fun swapStationNames() {
+        trainsViewModel.swapStationNames()
+    }
 }
 
 private fun createSearchStationsCallback(

@@ -44,7 +44,8 @@ fun StationsDisplayCard(
     departureStationName: String? = null,
     arrivalStationName: String? = null,
     onDepartureStationNameClick: () -> Unit = {},
-    onArrivalStationNameClick: () -> Unit = {}
+    onArrivalStationNameClick: () -> Unit = {},
+    onSwapStationsButtonClick: () -> Unit = {}
 ) {
     Card(shape = cardShape, elevation = cardElevation, modifier = modifier) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -68,7 +69,7 @@ fun StationsDisplayCard(
                 )
             }
             IconButton(
-                onClick = { /*TODO: swap button*/ },
+                onClick = onSwapStationsButtonClick,
                 modifier = Modifier.padding(8.dp),
                 enabled = departureStationName?.isNotEmpty() == true && arrivalStationName?.isNotEmpty() == true
             ) {

@@ -46,6 +46,14 @@ class TrainsViewModel : ViewModel() {
     val stateFlow: StateFlow<State>
         get() = _stateFlow
 
+    fun swapStationNames() {
+        val state = _stateFlow.value
+        _stateFlow.value = state.copy(
+            departureStationName = state.arrivalStationName,
+            arrivalStationName = state.departureStationName
+        )
+    }
+
     fun setArrivalStationName(stationName: String) {
         _stateFlow.value = _stateFlow.value.copy(arrivalStationName = stationName)
     }

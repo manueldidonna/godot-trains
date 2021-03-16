@@ -43,6 +43,7 @@ interface SearchTrainsCallback {
     val departureDate: Flow<LocalDate>
     fun searchDepartureStation()
     fun searchArrivalStation()
+    fun swapStationNames()
     fun setDepartureTimeInMinutes(timeInMinutes: Int)
     fun setDepartureDate(localDate: LocalDate)
     fun searchOneWaySolutions()
@@ -86,8 +87,9 @@ fun SearchTrainsScreen(callback: SearchTrainsCallback) {
                 cardShape = MaterialTheme.shapes.medium,
                 arrivalStationName = arrivalStationName,
                 departureStationName = departureStationName,
-                onArrivalStationNameClick = callback::searchArrivalStation,
-                onDepartureStationNameClick = callback::searchDepartureStation
+                onArrivalStationNameClick = updatedCallback::searchArrivalStation,
+                onDepartureStationNameClick = updatedCallback::searchDepartureStation,
+                onSwapStationsButtonClick = updatedCallback::swapStationNames
             )
 
             if (isSearchEnabled) {
