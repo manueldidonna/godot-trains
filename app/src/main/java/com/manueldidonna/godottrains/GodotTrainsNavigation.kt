@@ -82,6 +82,9 @@ private fun createSearchTrainsCallback(
     override val departureDate: Flow<LocalDate> =
         trainsViewModel.stateFlow.map { it.departureDate }
 
+    override val isSearchAllowed: Flow<Boolean> =
+        trainsViewModel.stateFlow.map { it.isSearchAllowed }
+
     override fun searchArrivalStation() {
         navController.navigate(SearchStations.createRouteFromArguments(isDeparture = false))
     }

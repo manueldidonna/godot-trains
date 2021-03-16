@@ -20,7 +20,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,6 +44,7 @@ interface SearchTrainsCallback {
     val arrivalStationName: Flow<String?>
     val departureTimeInMinutes: Flow<Int>
     val departureDate: Flow<LocalDate>
+    val isSearchAllowed: Flow<Boolean>
     fun searchDepartureStation()
     fun searchArrivalStation()
     fun swapStationNames()
@@ -66,11 +70,7 @@ fun SearchTrainsScreen(callback: SearchTrainsCallback) {
             initial = Clock.System.todayAt(TimeZone.currentSystemDefault())
         )
 
-        val isSearchEnabled by remember {
-            derivedStateOf {
-                !departureStationName.isNullOrEmpty() && !arrivalStationName.isNullOrEmpty()
-            }
-        }
+        val isSearchAllowed by updatedCallback.isSearchAllowed.collectAsState(false)
 
         Column(
             modifier = Modifier
@@ -92,7 +92,7 @@ fun SearchTrainsScreen(callback: SearchTrainsCallback) {
                 onSwapStationsButtonClick = updatedCallback::swapStationNames
             )
 
-            if (isSearchEnabled) {
+            if (isSearchAllowed) {
                 DepartureDateCard(
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
                     cardElevation = 2.dp,
@@ -122,7 +122,7 @@ fun SearchTrainsScreen(callback: SearchTrainsCallback) {
                 .align(Alignment.BottomCenter)
                 .navigationBarsPadding(),
             onClick = updatedCallback::searchOneWaySolutions,
-            enabled = isSearchEnabled
+            enabled = isSearchAllowed
         )
     }
 }

@@ -39,7 +39,12 @@ class TrainsViewModel : ViewModel() {
             .toLocalDateTime(TimeZone.currentSystemDefault())
             .run { hour * 60 + minute },
         val departureDate: LocalDate = Clock.System.todayAt(TimeZone.currentSystemDefault())
-    )
+    ) {
+        val isSearchAllowed: Boolean
+            get() = !departureStationName.isNullOrBlank()
+                    && !arrivalStationName.isNullOrBlank()
+                    && arrivalStationName != departureStationName
+    }
 
     private val _stateFlow = MutableStateFlow(State())
 
@@ -144,6 +149,7 @@ class TrainsViewModel : ViewModel() {
     ): List<OneWaySolution> {
         require(!departureStationName.isNullOrBlank())
         require(!arrivalStationName.isNullOrBlank())
+        require(arrivalStationName != departureStationName)
         return leFrecceApi.getOneWaySolutions(
             departureStationName = departureStationName,
             arrivalStationName = arrivalStationName,
