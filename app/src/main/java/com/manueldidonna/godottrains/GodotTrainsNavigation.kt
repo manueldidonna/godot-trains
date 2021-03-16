@@ -23,10 +23,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
+import com.manueldidonna.godottrains.entities.OneWaySolution
 import com.manueldidonna.godottrains.searchstations.SearchStationsCallback
 import com.manueldidonna.godottrains.searchstations.SearchStationsScreen
 import com.manueldidonna.godottrains.searchtrains.SearchTrainsCallback
 import com.manueldidonna.godottrains.searchtrains.SearchTrainsScreen
+import com.manueldidonna.godottrains.trainsresult.TrainsResultCallback
+import com.manueldidonna.godottrains.trainsresult.TrainsResultScreen
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDate
@@ -52,6 +55,21 @@ fun GodotTrainsNavigation() {
                 createSearchStationsCallback(viewModel, navController, searchForDeparture)
             }
             SearchStationsScreen(callback = callback)
+        }
+
+        composable(OneWaySolutionsRoute) {
+            val callback = remember(viewModel) {
+                object : TrainsResultCallback {
+                    override fun getOneWaySolutions(): Flow<List<OneWaySolution>> {
+                        return viewModel.getOneWaySolutions()
+                    }
+
+                    override suspend fun loadNextOneWaySolutions() {
+                        viewModel.loadNextOneWaySolutions()
+                    }
+                }
+            }
+            TrainsResultScreen(callback = callback)
         }
     }
 }
@@ -87,6 +105,10 @@ private fun createSearchTrainsCallback(
     override fun setDepartureDate(localDate: LocalDate) {
         trainsViewModel.setDepartureDate(localDate)
     }
+
+    override fun searchOneWaySolutions() {
+        navController.navigate(OneWaySolutionsRoute)
+    }
 }
 
 private fun createSearchStationsCallback(
@@ -114,6 +136,9 @@ private fun createSearchStationsCallback(
 
 @Keep
 private const val SearchTrainsRoute = "search_trains"
+
+@Keep
+private const val OneWaySolutionsRoute = "one_way_solutions"
 
 private object SearchStations {
 

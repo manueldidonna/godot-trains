@@ -17,13 +17,20 @@
 package com.manueldidonna.godottrains
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.manueldidonna.godottrains.entities.OneWaySolution
 import com.manueldidonna.godottrains.network.LeFrecceApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 import kotlinx.datetime.*
 
 class TrainsViewModel : ViewModel() {
+
+    // TODO: this should be a constructor dependency
+    private val leFrecceApi = LeFrecceApi.Ktor
 
     data class State(
         val departureStationName: String? = null,
@@ -55,9 +62,8 @@ class TrainsViewModel : ViewModel() {
         _stateFlow.value = _stateFlow.value.copy(departureDate = localDate)
     }
 
-    // TODO: implement this function
     suspend fun getStationNamesByQuery(query: String): List<String> {
-        return LeFrecceApi.Ktor.getStationsByPartialName(query)
+        return leFrecceApi.getStationsByPartialName(query)
     }
 
     // TODO: save results to the disk with jetpack DataStore
@@ -68,4 +74,72 @@ class TrainsViewModel : ViewModel() {
             "Napoli MonteSanto"
         )
     )
+
+    private val oneWaySolutionsForState =
+        mutableMapOf<State, MutableStateFlow<List<OneWaySolution>>>()
+
+    fun getOneWaySolutions(): Flow<List<OneWaySolution>> {
+        val currentState = _stateFlow.value
+        var solutionsStateFlow = oneWaySolutionsForState[currentState]
+        if (solutionsStateFlow == null) {
+            solutionsStateFlow = MutableStateFlow(emptyList())
+            oneWaySolutionsForState[currentState] = solutionsStateFlow
+            viewModelScope.launch {
+                solutionsStateFlow.value = getOneWaySolutions(
+                    departureStationName = currentState.departureStationName,
+                    arrivalStationName = currentState.arrivalStationName,
+                    departureDateTime = getLocalDateTime(
+                        localDate = currentState.departureDate,
+                        timeInMinutes = currentState.departureTimeInMinutes
+                    )
+                )
+            }
+        }
+        return solutionsStateFlow
+    }
+
+    suspend fun loadNextOneWaySolutions() {
+        val currentState = _stateFlow.value
+        val currentSolutionsFlow = oneWaySolutionsForState[currentState] ?: return
+        val currentSolutions = currentSolutionsFlow.value
+        if (currentSolutions.isEmpty()) return
+        currentSolutionsFlow.value = currentSolutions + getOneWaySolutions(
+            departureStationName = currentState.departureStationName,
+            arrivalStationName = currentState.arrivalStationName,
+            // we need to change the date to get the next solutions
+            departureDateTime = currentSolutions.last().departureDateTime.getNextDepartureTime()
+        )
+    }
+
+    private fun getLocalDateTime(localDate: LocalDate, timeInMinutes: Int): LocalDateTime {
+        require(timeInMinutes >= 0)
+        return LocalDateTime(
+            year = localDate.year,
+            month = localDate.month,
+            dayOfMonth = localDate.dayOfMonth,
+            hour = timeInMinutes / 60,
+            minute = timeInMinutes % 60
+        )
+    }
+
+    private fun LocalDateTime.getNextDepartureTime(): LocalDateTime {
+        val timeZone = TimeZone.currentSystemDefault()
+        return toInstant(timeZone)
+            .plus(1, DateTimeUnit.MINUTE, timeZone)
+            .toLocalDateTime(timeZone)
+    }
+
+    private suspend fun getOneWaySolutions(
+        departureStationName: String?,
+        arrivalStationName: String?,
+        departureDateTime: LocalDateTime,
+    ): List<OneWaySolution> {
+        require(!departureStationName.isNullOrBlank())
+        require(!arrivalStationName.isNullOrBlank())
+        return leFrecceApi.getOneWaySolutions(
+            departureStationName = departureStationName,
+            arrivalStationName = arrivalStationName,
+            firstDepartureDateTime = departureDateTime
+        )
+    }
 }

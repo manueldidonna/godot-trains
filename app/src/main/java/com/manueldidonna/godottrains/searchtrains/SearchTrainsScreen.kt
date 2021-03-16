@@ -45,6 +45,7 @@ interface SearchTrainsCallback {
     fun searchArrivalStation()
     fun setDepartureTimeInMinutes(timeInMinutes: Int)
     fun setDepartureDate(localDate: LocalDate)
+    fun searchOneWaySolutions()
 }
 
 @Composable
@@ -118,7 +119,7 @@ fun SearchTrainsScreen(callback: SearchTrainsCallback) {
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .navigationBarsPadding(),
-            onClick = { /*TODO*/ },
+            onClick = updatedCallback::searchOneWaySolutions,
             enabled = isSearchEnabled
         )
     }
