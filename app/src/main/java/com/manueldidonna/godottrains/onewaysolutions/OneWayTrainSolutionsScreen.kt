@@ -14,7 +14,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.manueldidonna.godottrains.trainsresult
+package com.manueldidonna.godottrains.onewaysolutions
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -49,13 +49,14 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toJavaLocalDateTime
 import java.time.format.DateTimeFormatter
 
-interface TrainsResultCallback {
+interface OneWayTrainSolutionsCallback {
     fun getOneWaySolutions(): Flow<List<OneWaySolution>>
     suspend fun loadNextOneWaySolutions()
+    fun closeOneWaySolutionsScreen()
 }
 
 @Composable
-fun TrainsResultScreen(callback: TrainsResultCallback) {
+fun OneWayTrainSolutionsScreen(callback: OneWayTrainSolutionsCallback) {
     val updatedCallback by rememberUpdatedState(callback)
 
     val oneWaySolutionsGroupedByDay: Map<Int, List<OneWaySolution>> by remember(updatedCallback) {
@@ -69,7 +70,10 @@ fun TrainsResultScreen(callback: TrainsResultCallback) {
     val scope = rememberCoroutineScope()
 
     Column(modifier = Modifier.fillMaxSize()) {
-        TrainsResultAppBar(modifier = Modifier.zIndex(8f))
+        OneWayTrainSolutionsAppBar(
+            modifier = Modifier.zIndex(8f),
+            onArrowBackClick = updatedCallback::closeOneWaySolutionsScreen
+        )
 
         Crossfade(
             targetState = oneWaySolutionsGroupedByDay.isEmpty(),
@@ -105,7 +109,10 @@ fun TrainsResultScreen(callback: TrainsResultCallback) {
 }
 
 @Composable
-private fun TrainsResultAppBar(modifier: Modifier = Modifier) {
+private fun OneWayTrainSolutionsAppBar(
+    modifier: Modifier = Modifier,
+    onArrowBackClick: () -> Unit
+) {
     Surface(
         elevation = AppBarDefaults.TopAppBarElevation,
         color = MaterialTheme.colors.surface,
@@ -119,7 +126,7 @@ private fun TrainsResultAppBar(modifier: Modifier = Modifier) {
             elevation = 0.dp,
             modifier = Modifier.statusBarsPadding(),
             navigationIcon = {
-                IconButton(onClick = { /*TODO*/ }) {
+                IconButton(onClick = onArrowBackClick) {
                     Icon(Icons.Rounded.ArrowBack, contentDescription = "go back")
                 }
             }
@@ -143,7 +150,7 @@ private fun OneWaySolutionsList(
                 )
             }
             items(oneWaySolutions) { solution ->
-                TrainSolutionDetailsCard(
+                OneWayTrainSolutionCard(
                     cardShape = MaterialTheme.shapes.medium,
                     cardElevation = 2.dp,
                     modifier = Modifier

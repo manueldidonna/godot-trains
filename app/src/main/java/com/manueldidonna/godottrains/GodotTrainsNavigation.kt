@@ -24,12 +24,12 @@ import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import com.manueldidonna.godottrains.entities.OneWaySolution
+import com.manueldidonna.godottrains.onewaysolutions.OneWayTrainSolutionsCallback
+import com.manueldidonna.godottrains.onewaysolutions.OneWayTrainSolutionsScreen
 import com.manueldidonna.godottrains.searchstations.SearchStationsCallback
 import com.manueldidonna.godottrains.searchstations.SearchStationsScreen
 import com.manueldidonna.godottrains.searchtrains.SearchTrainsCallback
 import com.manueldidonna.godottrains.searchtrains.SearchTrainsScreen
-import com.manueldidonna.godottrains.trainsresult.TrainsResultCallback
-import com.manueldidonna.godottrains.trainsresult.TrainsResultScreen
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDate
@@ -57,19 +57,11 @@ fun GodotTrainsNavigation() {
             SearchStationsScreen(callback = callback)
         }
 
-        composable(OneWaySolutionsRoute) {
-            val callback = remember(viewModel) {
-                object : TrainsResultCallback {
-                    override fun getOneWaySolutions(): Flow<List<OneWaySolution>> {
-                        return viewModel.getOneWaySolutions()
-                    }
-
-                    override suspend fun loadNextOneWaySolutions() {
-                        viewModel.loadNextOneWaySolutions()
-                    }
-                }
+        composable(OneWayTrainSolutionsRoute) {
+            val callback = remember(viewModel, navController) {
+                createOneWayTrainSolutionsCallback(viewModel, navController)
             }
-            TrainsResultScreen(callback = callback)
+            OneWayTrainSolutionsScreen(callback = callback)
         }
     }
 }
@@ -107,7 +99,7 @@ private fun createSearchTrainsCallback(
     }
 
     override fun searchOneWaySolutions() {
-        navController.navigate(OneWaySolutionsRoute)
+        navController.navigate(OneWayTrainSolutionsRoute)
     }
 }
 
@@ -134,11 +126,28 @@ private fun createSearchStationsCallback(
     }
 }
 
+private fun createOneWayTrainSolutionsCallback(
+    trainsViewModel: TrainsViewModel,
+    navController: NavController
+) = object : OneWayTrainSolutionsCallback {
+    override fun getOneWaySolutions(): Flow<List<OneWaySolution>> {
+        return trainsViewModel.getOneWaySolutions()
+    }
+
+    override suspend fun loadNextOneWaySolutions() {
+        trainsViewModel.loadNextOneWaySolutions()
+    }
+
+    override fun closeOneWaySolutionsScreen() {
+        navController.popBackStack()
+    }
+}
+
 @Keep
 private const val SearchTrainsRoute = "search_trains"
 
 @Keep
-private const val OneWaySolutionsRoute = "one_way_solutions"
+private const val OneWayTrainSolutionsRoute = "one_way_train_solutions"
 
 private object SearchStations {
 

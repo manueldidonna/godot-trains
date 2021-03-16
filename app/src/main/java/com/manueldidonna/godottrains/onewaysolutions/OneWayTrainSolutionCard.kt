@@ -14,7 +14,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.manueldidonna.godottrains.trainsresult
+package com.manueldidonna.godottrains.onewaysolutions
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -41,7 +41,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
 @Composable
-fun TrainSolutionDetailsCard(
+fun OneWayTrainSolutionCard(
     modifier: Modifier = Modifier,
     cardElevation: Dp = 1.dp,
     cardShape: Shape = MaterialTheme.shapes.medium,
@@ -144,7 +144,7 @@ private fun PreviewTrainSolutionDetails() {
     GodotTrainsTheme(darkTheme = false) {
         Surface {
             Column {
-                TrainSolutionDetailsCard(
+                OneWayTrainSolutionCard(
                     modifier = Modifier.padding(8.dp),
                     oneWaySolution = OneWaySolution(
                         trains = listOf(Train("MET 21300")),
