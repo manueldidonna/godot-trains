@@ -33,14 +33,21 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.manueldidonna.godottrains.entities.OneWaySolution
 import dev.chrisbanes.accompanist.insets.navigationBarsHeight
 import dev.chrisbanes.accompanist.insets.navigationBarsPadding
 import dev.chrisbanes.accompanist.insets.statusBarsPadding
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.toJavaLocalDateTime
+import java.time.format.DateTimeFormatter
 
 interface TrainsResultCallback {
     fun getOneWaySolutions(): Flow<List<OneWaySolution>>
@@ -51,9 +58,11 @@ interface TrainsResultCallback {
 fun TrainsResultScreen(callback: TrainsResultCallback) {
     val updatedCallback by rememberUpdatedState(callback)
 
-    val oneWaySolutions by remember(updatedCallback) {
+    val oneWaySolutionsGroupedByDay: Map<Int, List<OneWaySolution>> by remember(updatedCallback) {
         updatedCallback.getOneWaySolutions()
-    }.collectAsState(emptyList())
+            .map { it.groupBy { solution -> solution.departureDateTime.dayOfYear } }
+            .flowOn(Dispatchers.Default)
+    }.collectAsState(emptyMap())
 
     var isLoadingNextSolutions by remember { mutableStateOf(false) }
 
@@ -63,7 +72,7 @@ fun TrainsResultScreen(callback: TrainsResultCallback) {
         TrainsResultAppBar(modifier = Modifier.zIndex(8f))
 
         Crossfade(
-            targetState = oneWaySolutions.isEmpty(),
+            targetState = oneWaySolutionsGroupedByDay.isEmpty(),
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
@@ -80,7 +89,7 @@ fun TrainsResultScreen(callback: TrainsResultCallback) {
             } else {
                 OneWaySolutionsList(
                     contentPadding = remember { PaddingValues(top = 16.dp, bottom = 24.dp) },
-                    oneWaySolutions = oneWaySolutions,
+                    oneWaySolutionsGroupedByDay = oneWaySolutionsGroupedByDay,
                     isLoadingNextSolutions = isLoadingNextSolutions,
                     loadNextOneWaySolutions = {
                         isLoadingNextSolutions = true
@@ -121,21 +130,30 @@ private fun TrainsResultAppBar(modifier: Modifier = Modifier) {
 @Composable
 private fun OneWaySolutionsList(
     contentPadding: PaddingValues,
-    oneWaySolutions: List<OneWaySolution>,
+    oneWaySolutionsGroupedByDay: Map<Int, List<OneWaySolution>>,
     isLoadingNextSolutions: Boolean,
     loadNextOneWaySolutions: () -> Unit
 ) {
     LazyColumn(contentPadding = contentPadding) {
-        items(oneWaySolutions) { solution ->
-            TrainSolutionDetailsCard(
-                cardShape = MaterialTheme.shapes.medium,
-                cardElevation = 2.dp,
-                modifier = Modifier
-                    .padding(vertical = 8.dp, horizontal = 24.dp)
-                    .fillMaxWidth(),
-                oneWaySolution = solution
-            )
+        oneWaySolutionsGroupedByDay.forEach { (_, oneWaySolutions) ->
+            item {
+                OneWaySolutionsListHeader(
+                    departureDateTime = oneWaySolutions.first().departureDateTime,
+                    modifier = Modifier.padding(top = 24.dp, start = 24.dp, bottom = 16.dp)
+                )
+            }
+            items(oneWaySolutions) { solution ->
+                TrainSolutionDetailsCard(
+                    cardShape = MaterialTheme.shapes.medium,
+                    cardElevation = 2.dp,
+                    modifier = Modifier
+                        .padding(vertical = 12.dp, horizontal = 24.dp)
+                        .fillMaxWidth(),
+                    oneWaySolution = solution
+                )
+            }
         }
+
         item {
             LoadNextSolutionsButton(
                 modifier = Modifier.padding(vertical = 16.dp),
@@ -145,6 +163,24 @@ private fun OneWaySolutionsList(
         }
         item { Spacer(Modifier.navigationBarsHeight()) }
     }
+}
+
+@OptIn(ExperimentalStdlibApi::class)
+@Composable
+private fun OneWaySolutionsListHeader(modifier: Modifier, departureDateTime: LocalDateTime) {
+    val configuration = LocalConfiguration.current
+    val dayFullName = remember(configuration, departureDateTime) {
+        val locale = configuration.locales.get(0)
+        departureDateTime
+            .toJavaLocalDateTime()
+            .format(DateTimeFormatter.ofPattern("EEEE, dd MMMM", locale))
+    }
+    Text(
+        text = dayFullName,
+        style = MaterialTheme.typography.subtitle2,
+        color = LocalContentColor.current.copy(alpha = ContentAlpha.medium),
+        modifier = modifier
+    )
 }
 
 @OptIn(ExperimentalAnimationApi::class)
