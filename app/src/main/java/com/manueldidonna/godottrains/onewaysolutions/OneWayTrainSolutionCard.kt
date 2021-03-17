@@ -136,7 +136,6 @@ private fun SolutionPrice(modifier: Modifier = Modifier, priceInEuro: Double) {
     )
 }
 
-
 @Preview
 @Composable
 private fun PreviewTrainSolutionDetails() {

@@ -82,7 +82,7 @@ fun DepartureDateCard(
                 val colors = MaterialTheme.colors
                 val selectedContentColor = if (colors.isLight) colors.onPrimary else colors.primary
                 val unselectedContentColor =
-                    if(colors.isLight) colors.onPrimary.copy(alpha = ContentAlpha.medium)
+                    if (colors.isLight) colors.onPrimary.copy(alpha = ContentAlpha.medium)
                     else colors.onSurface.copy(alpha = ContentAlpha.medium)
                 availableDays.forEachIndexed { index, localDate ->
                     Tab(

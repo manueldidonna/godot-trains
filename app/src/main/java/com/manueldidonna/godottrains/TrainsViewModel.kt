@@ -18,18 +18,21 @@ package com.manueldidonna.godottrains
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.manueldidonna.godottrains.database.SqlDelightDatabase
 import com.manueldidonna.godottrains.entities.OneWaySolution
 import com.manueldidonna.godottrains.network.LeFrecceApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.datetime.*
 
 class TrainsViewModel : ViewModel() {
 
-    // TODO: this should be a constructor dependency
+    // TODO: these should be a constructor dependency
     private val leFrecceApi = LeFrecceApi.Ktor
+    private val getStationNamesUseCase = SqlDelightDatabase.getStationNamesUseCase
+    private val saveStationNameUseCase = SqlDelightDatabase.saveStationNameUseCase
 
     data class State(
         val departureStationName: String? = null,
@@ -40,9 +43,9 @@ class TrainsViewModel : ViewModel() {
         val departureDate: LocalDate = Clock.System.todayAt(TimeZone.currentSystemDefault())
     ) {
         val isSearchAllowed: Boolean
-            get() = !departureStationName.isNullOrBlank()
-                    && !arrivalStationName.isNullOrBlank()
-                    && arrivalStationName != departureStationName
+            get() = !departureStationName.isNullOrBlank() &&
+                !arrivalStationName.isNullOrBlank() &&
+                arrivalStationName != departureStationName
     }
 
     private val _stateFlow = MutableStateFlow(State())
@@ -60,10 +63,16 @@ class TrainsViewModel : ViewModel() {
 
     fun setArrivalStationName(stationName: String) {
         _stateFlow.value = _stateFlow.value.copy(arrivalStationName = stationName)
+        viewModelScope.launch {
+            saveStationNameUseCase(stationName = stationName)
+        }
     }
 
     fun setDepartureStationName(stationName: String) {
         _stateFlow.value = _stateFlow.value.copy(departureStationName = stationName)
+        viewModelScope.launch {
+            saveStationNameUseCase(stationName = stationName)
+        }
     }
 
     fun setDepartureTimeInMinutes(timeInMinutes: Int) {
@@ -78,14 +87,8 @@ class TrainsViewModel : ViewModel() {
         return leFrecceApi.getStationsByPartialName(query)
     }
 
-    // TODO: save results to the disk with jetpack DataStore
-    val recentSearchResults = flowOf(
-        listOf(
-            "Torre del Greco",
-            "Napoli Piazza Garibaldi",
-            "Napoli MonteSanto"
-        )
-    )
+    val recentSearchResults: Flow<List<String>>
+        get() = getStationNamesUseCase()
 
     private val oneWaySolutionsForState =
         mutableMapOf<State, MutableStateFlow<List<OneWaySolution>?>>()
