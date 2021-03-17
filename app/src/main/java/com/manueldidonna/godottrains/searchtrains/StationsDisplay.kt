@@ -25,7 +25,6 @@ import androidx.compose.material.icons.rounded.Place
 import androidx.compose.material.icons.rounded.SwapVert
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -91,27 +90,30 @@ private fun StationName(
     onClick: () -> Unit
 ) {
     val textToShow = if (text.isNullOrEmpty()) placeHolderText else text
-    val contentAlpha = if (text.isNullOrEmpty()) ContentAlpha.disabled else ContentAlpha.high
-    CompositionLocalProvider(LocalContentAlpha provides contentAlpha) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = modifier
-                .clip(MaterialTheme.shapes.small)
-                .clickable(
-                    onClick = onClick,
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = rememberRipple(color = MaterialTheme.colors.primary)
-                )
-                .padding(vertical = 16.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.Place,
-                contentDescription = "station location icon",
-                tint = LocalContentColor.current.copy(alpha = ContentAlpha.medium)
+    val iconTintAlpha = if (text.isNullOrEmpty()) ContentAlpha.disabled else ContentAlpha.medium
+    val textColorAlpha = if (text.isNullOrEmpty()) ContentAlpha.disabled else ContentAlpha.high
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .clip(MaterialTheme.shapes.small)
+            .clickable(
+                onClick = onClick,
+                interactionSource = remember { MutableInteractionSource() },
+                indication = rememberRipple(color = MaterialTheme.colors.primary)
             )
-            Spacer(Modifier.width(20.dp))
-            Text(text = textToShow, style = MaterialTheme.typography.body1)
-        }
+            .padding(vertical = 16.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.Place,
+            contentDescription = "station location icon",
+            tint = LocalContentColor.current.copy(alpha = iconTintAlpha)
+        )
+        Spacer(Modifier.width(20.dp))
+        Text(
+            text = textToShow,
+            style = MaterialTheme.typography.body1,
+            color = LocalContentColor.current.copy(alpha = textColorAlpha)
+        )
     }
 }
 
