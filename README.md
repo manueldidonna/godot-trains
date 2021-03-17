@@ -1,5 +1,12 @@
 # :train2: Godot Trains
 
+<p>
+  <img width="24%" src="art/search_trains_light.png?raw=true">
+  <img width="24%" src="art/search_trains_dark.png?raw=true">
+  <img width="24%" src="art/search_stations_light.png?raw=true">
+  <img width="24%" src="art/train_solutions_light.png?raw=true">
+</p>
+
 An Android app to search for Trenitalia train times in Italy.
 
 ## :man_technologist: Android Development
