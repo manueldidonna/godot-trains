@@ -44,19 +44,16 @@ interface LeFrecceApi {
 private class KtorLeFrecceApi : LeFrecceApi {
     private val client = HttpClient(OkHttp)
     private val json = Json { ignoreUnknownKeys = true }
+
     override suspend fun getStationsByPartialName(partialName: String): List<String> {
         if (partialName.isBlank() || partialName.length < 3) return emptyList()
-        return try {
-            val response: String = client.get("$ApiPath/geolocations/locations") {
-                parameter("name", partialName)
-            }
-            json
-                .parseToJsonElement(response)
-                .jsonArray
-                .mapNotNull { it.jsonObject["name"]?.jsonPrimitive?.content }
-        } catch (e: Exception) {
-            emptyList()
+        val response: String = client.get("$ApiPath/geolocations/locations") {
+            parameter("name", partialName)
         }
+        return json
+            .parseToJsonElement(response)
+            .jsonArray
+            .mapNotNull { it.jsonObject["name"]?.jsonPrimitive?.content }
     }
 
     @OptIn(ExperimentalStdlibApi::class)

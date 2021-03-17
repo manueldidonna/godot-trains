@@ -44,8 +44,8 @@ class TrainsViewModel : ViewModel() {
     ) {
         val isSearchAllowed: Boolean
             get() = !departureStationName.isNullOrBlank() &&
-                !arrivalStationName.isNullOrBlank() &&
-                arrivalStationName != departureStationName
+                    !arrivalStationName.isNullOrBlank() &&
+                    arrivalStationName != departureStationName
     }
 
     private val _stateFlow = MutableStateFlow(State())
@@ -84,7 +84,11 @@ class TrainsViewModel : ViewModel() {
     }
 
     suspend fun getStationNamesByQuery(query: String): List<String> {
-        return leFrecceApi.getStationsByPartialName(query)
+        return try {
+            leFrecceApi.getStationsByPartialName(query)
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 
     val recentSearchResults: Flow<List<String>>
@@ -154,10 +158,14 @@ class TrainsViewModel : ViewModel() {
         require(!departureStationName.isNullOrBlank())
         require(!arrivalStationName.isNullOrBlank())
         require(arrivalStationName != departureStationName)
-        return leFrecceApi.getOneWaySolutions(
-            departureStationName = departureStationName,
-            arrivalStationName = arrivalStationName,
-            firstDepartureDateTime = departureDateTime
-        )
+        return try {
+            leFrecceApi.getOneWaySolutions(
+                departureStationName = departureStationName,
+                arrivalStationName = arrivalStationName,
+                firstDepartureDateTime = departureDateTime
+            )
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 }
