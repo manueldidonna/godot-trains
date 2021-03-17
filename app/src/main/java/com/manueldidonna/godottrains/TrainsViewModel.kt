@@ -20,7 +20,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.manueldidonna.godottrains.entities.OneWaySolution
 import com.manueldidonna.godottrains.network.LeFrecceApi
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -89,14 +88,16 @@ class TrainsViewModel : ViewModel() {
     )
 
     private val oneWaySolutionsForState =
-        mutableMapOf<State, MutableStateFlow<List<OneWaySolution>>>()
+        mutableMapOf<State, MutableStateFlow<List<OneWaySolution>?>>()
 
-    fun getOneWaySolutions(): Flow<List<OneWaySolution>> {
+    fun getOneWaySolutions(): StateFlow<List<OneWaySolution>?> {
         val currentState = _stateFlow.value
         var solutionsStateFlow = oneWaySolutionsForState[currentState]
         if (solutionsStateFlow == null) {
-            solutionsStateFlow = MutableStateFlow(emptyList())
+            solutionsStateFlow = MutableStateFlow(null)
             oneWaySolutionsForState[currentState] = solutionsStateFlow
+        }
+        if (solutionsStateFlow.value.isNullOrEmpty()) {
             viewModelScope.launch {
                 solutionsStateFlow.value = getOneWaySolutions(
                     departureStationName = currentState.departureStationName,
@@ -115,7 +116,7 @@ class TrainsViewModel : ViewModel() {
         val currentState = _stateFlow.value
         val currentSolutionsFlow = oneWaySolutionsForState[currentState] ?: return
         val currentSolutions = currentSolutionsFlow.value
-        if (currentSolutions.isEmpty()) return
+        if (currentSolutions.isNullOrEmpty()) return
         currentSolutionsFlow.value = currentSolutions + getOneWaySolutions(
             departureStationName = currentState.departureStationName,
             arrivalStationName = currentState.arrivalStationName,

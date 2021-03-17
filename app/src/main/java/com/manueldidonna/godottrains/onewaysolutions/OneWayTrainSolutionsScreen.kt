@@ -17,9 +17,7 @@
 package com.manueldidonna.godottrains.onewaysolutions
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -41,7 +39,7 @@ import dev.chrisbanes.accompanist.insets.navigationBarsHeight
 import dev.chrisbanes.accompanist.insets.navigationBarsPadding
 import dev.chrisbanes.accompanist.insets.statusBarsPadding
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -50,60 +48,48 @@ import kotlinx.datetime.toJavaLocalDateTime
 import java.time.format.DateTimeFormatter
 
 interface OneWayTrainSolutionsCallback {
-    fun getOneWaySolutions(): Flow<List<OneWaySolution>>
+    fun getOneWaySolutions(): StateFlow<List<OneWaySolution>?>
     suspend fun loadNextOneWaySolutions()
     fun closeOneWaySolutionsScreen()
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun OneWayTrainSolutionsScreen(callback: OneWayTrainSolutionsCallback) {
     val updatedCallback by rememberUpdatedState(callback)
 
-    val oneWaySolutionsGroupedByDay: Map<Int, List<OneWaySolution>> by remember(updatedCallback) {
+    val oneWaySolutionsGroupedByDay by remember(updatedCallback) {
         updatedCallback.getOneWaySolutions()
-            .map { it.groupBy { solution -> solution.departureDateTime.dayOfYear } }
+            .map { it?.groupBy { solution -> solution.departureDateTime.dayOfYear } }
             .flowOn(Dispatchers.Default)
     }.collectAsState(emptyMap())
 
-    var isLoadingNextSolutions by remember { mutableStateOf(false) }
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (oneWaySolutionsGroupedByDay == null) {
+            LoadingIndicator(modifier = Modifier.fillMaxSize())
+        }
+        Column(modifier = Modifier.fillMaxSize()) {
+            OneWayTrainSolutionsAppBar(
+                modifier = Modifier.zIndex(8f),
+                onArrowBackClick = updatedCallback::closeOneWaySolutionsScreen
+            )
 
-    val scope = rememberCoroutineScope()
+            val scope = rememberCoroutineScope()
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        OneWayTrainSolutionsAppBar(
-            modifier = Modifier.zIndex(8f),
-            onArrowBackClick = updatedCallback::closeOneWaySolutionsScreen
-        )
+            var isLoadingNextSolutions by remember { mutableStateOf(false) }
 
-        Crossfade(
-            targetState = oneWaySolutionsGroupedByDay.isEmpty(),
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            animationSpec = remember { tween(durationMillis = 250) }
-        ) { showLoadingIndicator ->
-            if (showLoadingIndicator) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .wrapContentSize()
-                        .navigationBarsPadding(),
-                    strokeWidth = 8.dp
-                )
-            } else {
-                OneWaySolutionsList(
-                    contentPadding = remember { PaddingValues(top = 16.dp, bottom = 32.dp) },
-                    oneWaySolutionsGroupedByDay = oneWaySolutionsGroupedByDay,
-                    isLoadingNextSolutions = isLoadingNextSolutions,
-                    loadNextOneWaySolutions = {
-                        isLoadingNextSolutions = true
-                        scope.launch {
-                            updatedCallback.loadNextOneWaySolutions()
-                            isLoadingNextSolutions = false
-                        }
+            OneWaySolutionsList(
+                contentPadding = remember { PaddingValues(top = 8.dp, bottom = 32.dp) },
+                oneWaySolutionsGroupedByDay = oneWaySolutionsGroupedByDay,
+                isLoadingNextSolutions = isLoadingNextSolutions,
+                loadNextOneWaySolutions = {
+                    isLoadingNextSolutions = true
+                    scope.launch {
+                        updatedCallback.loadNextOneWaySolutions()
+                        isLoadingNextSolutions = false
                     }
-                )
-            }
+                }
+            )
         }
     }
 }
@@ -134,13 +120,28 @@ private fun OneWayTrainSolutionsAppBar(
     }
 }
 
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+private fun LoadingIndicator(modifier: Modifier) {
+    Box(modifier = modifier) {
+        CircularProgressIndicator(
+            modifier = Modifier
+                .fillMaxSize()
+                .wrapContentSize()
+                .navigationBarsPadding(),
+            strokeWidth = 8.dp
+        )
+    }
+}
+
 @Composable
 private fun OneWaySolutionsList(
     contentPadding: PaddingValues,
-    oneWaySolutionsGroupedByDay: Map<Int, List<OneWaySolution>>,
+    oneWaySolutionsGroupedByDay: Map<Int, List<OneWaySolution>>?,
     isLoadingNextSolutions: Boolean,
     loadNextOneWaySolutions: () -> Unit
 ) {
+    if (oneWaySolutionsGroupedByDay.isNullOrEmpty()) return
     LazyColumn(contentPadding = contentPadding) {
         oneWaySolutionsGroupedByDay.forEach { (_, oneWaySolutions) ->
             item {

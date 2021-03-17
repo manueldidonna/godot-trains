@@ -53,7 +53,7 @@ interface SearchStationsCallback {
 }
 
 @Composable
-fun SearchStationsScreen(callback: SearchStationsCallback) {
+fun SearchStationsScreen(callback: SearchStationsCallback, searchDepartureStation: Boolean) {
     val updatedCallback by rememberUpdatedState(callback)
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -72,6 +72,7 @@ fun SearchStationsScreen(callback: SearchStationsCallback) {
         }
 
         SearchToolbar(
+            searchDepartureStation = searchDepartureStation,
             isLoading = isLoading,
             query = query,
             onQueryChange = setQuery,
@@ -99,6 +100,7 @@ fun SearchStationsScreen(callback: SearchStationsCallback) {
 
 @Composable
 private fun SearchToolbar(
+    searchDepartureStation: Boolean,
     isLoading: Boolean,
     query: String,
     onQueryChange: (String) -> Unit = {},
@@ -128,7 +130,9 @@ private fun SearchToolbar(
             Box(modifier = Modifier.weight(1f)) {
                 if (query.isEmpty()) {
                     Text(
-                        text = "Search...",
+                        text =
+                        if (searchDepartureStation) "Search departure station..."
+                        else "Search arrival station...",
                         style = typography.body1,
                         color = colors.onSurface.copy(alpha = ContentAlpha.medium)
                     )
@@ -232,7 +236,7 @@ private fun PreviewSearchToolbar() {
     GodotTrainsTheme {
         EdgeToEdgeContent {
             Surface {
-                SearchToolbar(isLoading = true, query = "")
+                SearchToolbar(isLoading = true, query = "", searchDepartureStation = false)
             }
         }
     }

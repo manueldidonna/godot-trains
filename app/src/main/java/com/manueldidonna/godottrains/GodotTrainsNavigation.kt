@@ -31,6 +31,7 @@ import com.manueldidonna.godottrains.searchstations.SearchStationsScreen
 import com.manueldidonna.godottrains.searchtrains.SearchTrainsCallback
 import com.manueldidonna.godottrains.searchtrains.SearchTrainsScreen
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDate
 
@@ -54,7 +55,10 @@ fun GodotTrainsNavigation() {
             val callback = remember(viewModel, navController, searchForDeparture) {
                 createSearchStationsCallback(viewModel, navController, searchForDeparture)
             }
-            SearchStationsScreen(callback = callback)
+            SearchStationsScreen(
+                callback = callback,
+                searchDepartureStation = searchForDeparture
+            )
         }
 
         composable(OneWayTrainSolutionsRoute) {
@@ -137,7 +141,7 @@ private fun createOneWayTrainSolutionsCallback(
     trainsViewModel: TrainsViewModel,
     navController: NavController
 ) = object : OneWayTrainSolutionsCallback {
-    override fun getOneWaySolutions(): Flow<List<OneWaySolution>> {
+    override fun getOneWaySolutions(): StateFlow<List<OneWaySolution>?> {
         return trainsViewModel.getOneWaySolutions()
     }
 
