@@ -82,7 +82,7 @@ fun SearchTrainsScreen(callback: SearchTrainsCallback) {
                 .padding(top = 24.dp, bottom = 96.dp)
         ) {
             StationsDisplayCard(
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                 cardElevation = 2.dp,
                 cardShape = MaterialTheme.shapes.medium,
                 arrivalStationName = arrivalStationName,
@@ -94,7 +94,7 @@ fun SearchTrainsScreen(callback: SearchTrainsCallback) {
 
             if (isSearchAllowed) {
                 DepartureDateCard(
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                     cardElevation = 2.dp,
                     cardShape = MaterialTheme.shapes.medium,
                     selectedLocalDate = departureDate,
@@ -102,7 +102,7 @@ fun SearchTrainsScreen(callback: SearchTrainsCallback) {
                 )
 
                 DepartureTimeCard(
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                     cardElevation = 2.dp,
                     cardShape = MaterialTheme.shapes.medium,
                     selectedTimeInMinutes = departureTimeInMinutes,
@@ -162,7 +162,7 @@ private fun SearchFloatingButton(modifier: Modifier, enabled: Boolean, onClick: 
     ExtendedFloatingActionButton(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 32.dp, vertical = 32.dp),
+            .padding(horizontal = 24.dp, vertical = 32.dp),
         text = { Text(text = "SEARCH") },
         onClick = onClick,
         elevation = FloatingActionButtonDefaults.elevation(

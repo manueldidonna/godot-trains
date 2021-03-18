@@ -92,7 +92,7 @@ fun SearchStationsScreen(callback: SearchStationsCallback, searchDepartureStatio
             ) {
                 items(stationNames, key = { it }) { stationName ->
                     SearchResultEntity(
-                        modifier = Modifier.padding(horizontal = 24.dp),
+                        modifier = Modifier.padding(horizontal = 16.dp),
                         stationName = stationName,
                         onClick = { updatedCallback.selectStationByName(stationName) }
                     )
@@ -176,12 +176,12 @@ private fun RecentSearchResults(recentResults: List<String>, onClick: (String) -
         Text(
             text = "Recent search results",
             style = MaterialTheme.typography.subtitle2,
-            modifier = Modifier.padding(24.dp),
+            modifier = Modifier.padding(vertical = 24.dp, horizontal = 16.dp),
             color = LocalContentColor.current.copy(alpha = ContentAlpha.medium)
         )
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = remember { PaddingValues(start = 24.dp, end = 24.dp) },
+            contentPadding = remember { PaddingValues(start = 16.dp, end = 16.dp) },
         ) {
             items(recentResults) { result ->
                 RecentSearchCarouselEntity(

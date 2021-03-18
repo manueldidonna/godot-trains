@@ -152,7 +152,7 @@ private fun OneWaySolutionsList(
             item {
                 OneWaySolutionsListHeader(
                     departureDateTime = oneWaySolutions.first().departureDateTime,
-                    modifier = Modifier.padding(top = 24.dp, start = 24.dp, bottom = 16.dp)
+                    modifier = Modifier.padding(top = 24.dp, start = 16.dp, bottom = 16.dp)
                 )
             }
             items(oneWaySolutions) { solution ->
@@ -160,7 +160,7 @@ private fun OneWaySolutionsList(
                     cardShape = MaterialTheme.shapes.medium,
                     cardElevation = 2.dp,
                     modifier = Modifier
-                        .padding(vertical = 12.dp, horizontal = 24.dp)
+                        .padding(vertical = 12.dp, horizontal = 16.dp)
                         .fillMaxWidth(),
                     oneWaySolution = solution
                 )
