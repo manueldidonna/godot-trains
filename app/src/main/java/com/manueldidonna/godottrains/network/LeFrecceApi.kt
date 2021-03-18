@@ -21,7 +21,7 @@ import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.request.*
 import kotlinx.datetime.LocalDateTime
-import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -75,7 +75,7 @@ private class KtorLeFrecceApi : LeFrecceApi {
                 requestOffset = offset
             )
             solutions = json
-                .decodeFromString<List<OneWaySolution>>(response)
+                .decodeFromString(ListSerializer(OneWaySolution.serializer()), response)
                 .filter { solution ->
                     solution.departureDateTime >= firstDepartureDateTime
                 }
