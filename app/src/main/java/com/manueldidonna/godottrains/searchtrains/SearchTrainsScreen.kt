@@ -140,7 +140,9 @@ private fun GodotTrainsAppBar(modifier: Modifier = Modifier) {
             backgroundColor = Color.Transparent,
             contentColor = LocalContentColor.current,
             elevation = 0.dp,
-            modifier = Modifier.statusBarsPadding(),
+            modifier = Modifier
+                .statusBarsPadding()
+                .navigationBarsPadding(bottom = false, left = true, right = true),
         )
     }
 }

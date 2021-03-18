@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import com.manueldidonna.godottrains.EdgeToEdgeContent
 import com.manueldidonna.godottrains.GodotTrainsTheme
 import dev.chrisbanes.accompanist.insets.navigationBarsHeight
+import dev.chrisbanes.accompanist.insets.navigationBarsPadding
 import dev.chrisbanes.accompanist.insets.statusBarsPadding
 import kotlinx.coroutines.flow.Flow
 
@@ -85,7 +86,10 @@ fun SearchStationsScreen(callback: SearchStationsCallback, searchDepartureStatio
         }
 
         if (stationNames.isNotEmpty())
-            LazyColumn(contentPadding = remember { PaddingValues(top = 8.dp) }) {
+            LazyColumn(
+                contentPadding = remember { PaddingValues(top = 8.dp) },
+                modifier = Modifier.navigationBarsPadding(bottom = false, left = true, right = true)
+            ) {
                 items(stationNames, key = { it }) { stationName ->
                     SearchResultEntity(
                         modifier = Modifier.padding(horizontal = 24.dp),
@@ -114,6 +118,7 @@ private fun SearchToolbar(
         Row(
             modifier = Modifier
                 .statusBarsPadding()
+                .navigationBarsPadding(bottom = false, right = true, left = true)
                 .height(56.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -167,7 +172,7 @@ private fun SearchToolbar(
 
 @Composable
 private fun RecentSearchResults(recentResults: List<String>, onClick: (String) -> Unit) {
-    Column {
+    Column(modifier = Modifier.navigationBarsPadding(bottom = false, left = true, right = true)) {
         Text(
             text = "Recent search results",
             style = MaterialTheme.typography.subtitle2,
@@ -176,7 +181,7 @@ private fun RecentSearchResults(recentResults: List<String>, onClick: (String) -
         )
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = remember { PaddingValues(start = 24.dp, end = 24.dp) }
+            contentPadding = remember { PaddingValues(start = 24.dp, end = 24.dp) },
         ) {
             items(recentResults) { result ->
                 RecentSearchCarouselEntity(

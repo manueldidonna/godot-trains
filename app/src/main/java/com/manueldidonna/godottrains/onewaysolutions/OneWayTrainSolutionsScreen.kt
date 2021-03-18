@@ -79,6 +79,8 @@ fun OneWayTrainSolutionsScreen(callback: OneWayTrainSolutionsCallback) {
             var isLoadingNextSolutions by remember { mutableStateOf(false) }
 
             OneWaySolutionsList(
+                modifier = Modifier
+                    .navigationBarsPadding(bottom = false, left = true, right = true),
                 contentPadding = remember { PaddingValues(top = 8.dp, bottom = 32.dp) },
                 oneWaySolutionsGroupedByDay = oneWaySolutionsGroupedByDay,
                 isLoadingNextSolutions = isLoadingNextSolutions,
@@ -110,7 +112,9 @@ private fun OneWayTrainSolutionsAppBar(
             backgroundColor = Color.Transparent,
             contentColor = LocalContentColor.current,
             elevation = 0.dp,
-            modifier = Modifier.statusBarsPadding(),
+            modifier = Modifier
+                .statusBarsPadding()
+                .navigationBarsPadding(bottom = false, left = true, right = true),
             navigationIcon = {
                 IconButton(onClick = onArrowBackClick) {
                     Icon(Icons.Rounded.ArrowBack, contentDescription = "go back")
@@ -136,13 +140,14 @@ private fun LoadingIndicator(modifier: Modifier) {
 
 @Composable
 private fun OneWaySolutionsList(
+    modifier: Modifier = Modifier,
     contentPadding: PaddingValues,
     oneWaySolutionsGroupedByDay: Map<Int, List<OneWaySolution>>?,
     isLoadingNextSolutions: Boolean,
     loadNextOneWaySolutions: () -> Unit
 ) {
     if (oneWaySolutionsGroupedByDay.isNullOrEmpty()) return
-    LazyColumn(contentPadding = contentPadding) {
+    LazyColumn(contentPadding = contentPadding, modifier = modifier) {
         oneWaySolutionsGroupedByDay.forEach { (_, oneWaySolutions) ->
             item {
                 OneWaySolutionsListHeader(
