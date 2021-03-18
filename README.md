@@ -9,6 +9,8 @@
 
 An Android app to search for Trenitalia train times in Italy.
 
+:rocket: [Download APK](https://github.com/manueldidonna/godot-trains/releases/tag/v1.0.0)
+
 ## :man_technologist: Android Development
 > Trenitalia API has been documented by [SimoDax](https://github.com/SimoDax/Trenitalia-API/wiki/API-Trenitalia---lefrecce.it)
 - Entirely written in [Kotlin](https://kotlinlang.org/)
