@@ -148,7 +148,7 @@ private fun GodotTrainsAppBar(modifier: Modifier = Modifier) {
 @Composable
 private fun WelcomeVectorImage(modifier: Modifier) {
     CoilImage(
-        data = R.drawable.travel_world,
+        data = R.drawable.vec_search_world_location,
         contentDescription = null,
         modifier = modifier
     )
