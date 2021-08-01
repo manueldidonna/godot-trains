@@ -16,7 +16,6 @@
  */
 package com.manueldidonna.godottrains
 
-import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
@@ -24,14 +23,12 @@ import androidx.compose.material.Shapes
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
-import androidx.core.view.WindowCompat
-import dev.chrisbanes.accompanist.insets.ProvideWindowInsets
+import com.google.accompanist.insets.ProvideWindowInsets
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 @Composable
 fun GodotTrainsTheme(
@@ -47,19 +44,15 @@ fun GodotTrainsTheme(
 
 @Composable
 fun EdgeToEdgeContent(
-    areSystemBarsLight: Boolean = MaterialTheme.colors.isLight,
+    useDarkIcons: Boolean = MaterialTheme.colors.isLight,
     content: @Composable () -> Unit
 ) {
-    val view = LocalView.current
-    val window = (LocalContext.current as Activity).window
-    // window.statusBarColor = android.graphics.Color.TRANSPARENT
-    // window.navigationBarColor = android.graphics.Color.TRANSPARENT
-    val insetsController = remember(view, window) {
-        WindowCompat.getInsetsController(window, view)
-    }
-    insetsController?.run {
-        isAppearanceLightNavigationBars = areSystemBarsLight
-        isAppearanceLightStatusBars = areSystemBarsLight
+    val systemUiController = rememberSystemUiController()
+    SideEffect {
+        systemUiController.setSystemBarsColor(
+            color = Color.Transparent,
+            darkIcons = useDarkIcons
+        )
     }
     ProvideWindowInsets(content = content)
 }

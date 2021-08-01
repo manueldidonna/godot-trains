@@ -56,7 +56,6 @@ private class KtorLeFrecceApi : LeFrecceApi {
             .mapNotNull { it.jsonObject["name"]?.jsonPrimitive?.content }
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     override suspend fun getOneWaySolutions(
         departureStationName: String,
         arrivalStationName: String,
@@ -84,7 +83,6 @@ private class KtorLeFrecceApi : LeFrecceApi {
         return solutions
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     private suspend fun executeGetOneWaySolutionsRequest(
         departureStationName: String,
         arrivalStationName: String,

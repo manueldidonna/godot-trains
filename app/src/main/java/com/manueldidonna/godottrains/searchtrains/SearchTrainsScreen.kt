@@ -16,6 +16,7 @@
  */
 package com.manueldidonna.godottrains.searchtrains
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -29,10 +30,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import coil.compose.rememberImagePainter
+import com.google.accompanist.insets.navigationBarsPadding
+import com.google.accompanist.insets.statusBarsPadding
 import com.manueldidonna.godottrains.R
-import dev.chrisbanes.accompanist.coil.CoilImage
-import dev.chrisbanes.accompanist.insets.navigationBarsPadding
-import dev.chrisbanes.accompanist.insets.statusBarsPadding
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
@@ -142,17 +143,17 @@ private fun GodotTrainsAppBar(modifier: Modifier = Modifier) {
             elevation = 0.dp,
             modifier = Modifier
                 .statusBarsPadding()
-                .navigationBarsPadding(bottom = false, left = true, right = true),
+                .navigationBarsPadding(bottom = false, start = true, end = true),
         )
     }
 }
 
 @Composable
 private fun WelcomeVectorImage(modifier: Modifier) {
-    CoilImage(
-        data = R.drawable.vec_search_world_location,
+    Image(
+        modifier = modifier,
         contentDescription = null,
-        modifier = modifier
+        painter = rememberImagePainter(R.drawable.vec_search_world_location)
     )
 }
 

@@ -34,10 +34,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import com.google.accompanist.insets.navigationBarsHeight
+import com.google.accompanist.insets.navigationBarsPadding
+import com.google.accompanist.insets.statusBarsPadding
 import com.manueldidonna.godottrains.entities.OneWaySolution
-import dev.chrisbanes.accompanist.insets.navigationBarsHeight
-import dev.chrisbanes.accompanist.insets.navigationBarsPadding
-import dev.chrisbanes.accompanist.insets.statusBarsPadding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOn
@@ -53,7 +53,6 @@ interface OneWayTrainSolutionsCallback {
     fun closeOneWaySolutionsScreen()
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun OneWayTrainSolutionsScreen(callback: OneWayTrainSolutionsCallback) {
     val updatedCallback by rememberUpdatedState(callback)
@@ -80,7 +79,7 @@ fun OneWayTrainSolutionsScreen(callback: OneWayTrainSolutionsCallback) {
 
             OneWaySolutionsList(
                 modifier = Modifier
-                    .navigationBarsPadding(bottom = false, left = true, right = true),
+                    .navigationBarsPadding(bottom = false, start = true, end = true),
                 contentPadding = remember { PaddingValues(top = 8.dp, bottom = 32.dp) },
                 oneWaySolutionsGroupedByDay = oneWaySolutionsGroupedByDay,
                 isLoadingNextSolutions = isLoadingNextSolutions,
@@ -114,7 +113,7 @@ private fun OneWayTrainSolutionsAppBar(
             elevation = 0.dp,
             modifier = Modifier
                 .statusBarsPadding()
-                .navigationBarsPadding(bottom = false, left = true, right = true),
+                .navigationBarsPadding(bottom = false, start = true, end = true),
             navigationIcon = {
                 IconButton(onClick = onArrowBackClick) {
                     Icon(Icons.Rounded.ArrowBack, contentDescription = "go back")
@@ -124,7 +123,6 @@ private fun OneWayTrainSolutionsAppBar(
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun LoadingIndicator(modifier: Modifier) {
     Box(modifier = modifier) {
@@ -178,7 +176,6 @@ private fun OneWaySolutionsList(
     }
 }
 
-@OptIn(ExperimentalStdlibApi::class)
 @Composable
 private fun OneWaySolutionsListHeader(modifier: Modifier, departureDateTime: LocalDateTime) {
     val configuration = LocalConfiguration.current
@@ -221,7 +218,7 @@ private fun LoadNextSolutionsButton(
             if (!isLoading) MaterialTheme.colors.primary
             else LocalContentColor.current.copy(alpha = ContentAlpha.disabled)
 
-        AnimatedVisibility(visible = isLoading, initiallyVisible = false) {
+        AnimatedVisibility(visible = isLoading) {
             CircularProgressIndicator(
                 color = contentColor,
                 modifier = Modifier

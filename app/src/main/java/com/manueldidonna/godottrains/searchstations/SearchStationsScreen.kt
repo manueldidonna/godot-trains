@@ -39,11 +39,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.google.accompanist.insets.navigationBarsHeight
+import com.google.accompanist.insets.navigationBarsPadding
+import com.google.accompanist.insets.statusBarsPadding
 import com.manueldidonna.godottrains.EdgeToEdgeContent
 import com.manueldidonna.godottrains.GodotTrainsTheme
-import dev.chrisbanes.accompanist.insets.navigationBarsHeight
-import dev.chrisbanes.accompanist.insets.navigationBarsPadding
-import dev.chrisbanes.accompanist.insets.statusBarsPadding
 import kotlinx.coroutines.flow.Flow
 
 interface SearchStationsCallback {
@@ -88,7 +88,7 @@ fun SearchStationsScreen(callback: SearchStationsCallback, searchDepartureStatio
         if (stationNames.isNotEmpty())
             LazyColumn(
                 contentPadding = remember { PaddingValues(top = 8.dp) },
-                modifier = Modifier.navigationBarsPadding(bottom = false, left = true, right = true)
+                modifier = Modifier.navigationBarsPadding(bottom = false, start = true, end = true)
             ) {
                 items(stationNames, key = { it }) { stationName ->
                     SearchResultEntity(
@@ -118,7 +118,7 @@ private fun SearchToolbar(
         Row(
             modifier = Modifier
                 .statusBarsPadding()
-                .navigationBarsPadding(bottom = false, right = true, left = true)
+                .navigationBarsPadding(bottom = false, start = true, end = true)
                 .height(56.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -172,7 +172,7 @@ private fun SearchToolbar(
 
 @Composable
 private fun RecentSearchResults(recentResults: List<String>, onClick: (String) -> Unit) {
-    Column(modifier = Modifier.navigationBarsPadding(bottom = false, left = true, right = true)) {
+    Column(modifier = Modifier.navigationBarsPadding(bottom = false, start = true, end = true)) {
         Text(
             text = "Recent search results",
             style = MaterialTheme.typography.subtitle2,
