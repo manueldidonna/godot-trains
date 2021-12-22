@@ -22,12 +22,15 @@ import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavType
-import androidx.navigation.compose.*
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.manueldidonna.godottrains.entities.OneWaySolution
-import com.manueldidonna.godottrains.onewaysolutions.OneWayTrainSolutionsCallback
-import com.manueldidonna.godottrains.onewaysolutions.OneWayTrainSolutionsScreen
-import com.manueldidonna.godottrains.searchstations.SearchStationsCallback
-import com.manueldidonna.godottrains.searchstations.SearchStationsScreen
+import com.manueldidonna.godottrains.searchresults.OneWayTrainSolutionsCallback
+import com.manueldidonna.godottrains.searchresults.SearchResultsScreen
+import com.manueldidonna.godottrains.searchstation.SearchStationsCallback
+import com.manueldidonna.godottrains.searchstation.SearchStationScreen
 import com.manueldidonna.godottrains.searchtrains.SearchTrainsCallback
 import com.manueldidonna.godottrains.searchtrains.SearchTrainsScreen
 import kotlinx.coroutines.flow.Flow
@@ -55,7 +58,7 @@ fun GodotTrainsNavigation() {
             val callback = remember(viewModel, navController, searchForDeparture) {
                 createSearchStationsCallback(viewModel, navController, searchForDeparture)
             }
-            SearchStationsScreen(
+            SearchStationScreen(
                 callback = callback,
                 searchDepartureStation = searchForDeparture
             )
@@ -65,7 +68,7 @@ fun GodotTrainsNavigation() {
             val callback = remember(viewModel, navController) {
                 createOneWayTrainSolutionsCallback(viewModel, navController)
             }
-            OneWayTrainSolutionsScreen(callback = callback)
+            SearchResultsScreen(callback = callback)
         }
     }
 }
@@ -74,11 +77,11 @@ private fun createSearchTrainsCallback(
     trainsViewModel: TrainsViewModel,
     navController: NavController,
 ) = object : SearchTrainsCallback {
-    override val arrivalStationName: Flow<String?> =
-        trainsViewModel.stateFlow.map { it.arrivalStationName }
+    override val arrivalStationName: Flow<String> =
+        trainsViewModel.stateFlow.map { it.arrivalStationName.orEmpty() }
 
-    override val departureStationName: Flow<String?> =
-        trainsViewModel.stateFlow.map { it.departureStationName }
+    override val departureStationName: Flow<String> =
+        trainsViewModel.stateFlow.map { it.departureStationName.orEmpty() }
 
     override val departureTimeInMinutes: Flow<Int> =
         trainsViewModel.stateFlow.map { it.departureTimeInMinutes }
