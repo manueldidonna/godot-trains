@@ -19,10 +19,10 @@ package com.manueldidonna.godottrains
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 
@@ -32,20 +32,15 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             GodotTrainsTheme {
-                EdgeToEdgeContent {
-                    GodotTrains()
+                EdgeToEdgeContent(useDarkIcons = !isSystemInDarkTheme()) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.background,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        GodotTrainsNavigation()
+                    }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun GodotTrains() {
-    Surface(
-        color = MaterialTheme.colors.background,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        GodotTrainsNavigation()
     }
 }
