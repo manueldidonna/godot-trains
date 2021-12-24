@@ -221,8 +221,10 @@ private fun YearMonthStepper(
 @Composable
 private fun DayLabelsRow() {
     val weekLabels = remember {
-        DayOfWeek.values().map {
-            it.getDisplayName(TextStyle.NARROW, Locale.getDefault())
+        DayOfWeek.values().map { dayOfWeek ->
+            dayOfWeek
+                .getDisplayName(TextStyle.NARROW, Locale.getDefault())
+                .replaceFirstChar { it.titlecase(Locale.getDefault()) }
         }
     }
     Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
