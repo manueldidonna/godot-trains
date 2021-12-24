@@ -7,17 +7,14 @@
   <img width="24%" src="art/train_solutions_light.png?raw=true">
 </p>
 
-An Android app to search for Trenitalia train times in Italy.
+An Android app to search for train times in Italy.
 
-:rocket: [Download APK](https://github.com/manueldidonna/godot-trains/releases/tag/v1.0.0)
+:rocket: [Download APK](https://github.com/manueldidonna/godot-trains/releases)
 
 ## :man_technologist: Android Development
-> Trenitalia API has been documented by [SimoDax](https://github.com/SimoDax/Trenitalia-API/wiki/API-Trenitalia---lefrecce.it)
 - Entirely written in [Kotlin](https://kotlinlang.org/)
 - UI built with [Jetpack Compose](https://developer.android.com/jetpack/compose)
-- Handle insets with [Accompanist](https://github.com/chrisbanes/accompanist/tree/main/insets)
 - Data persistence with [SQLDelight](https://github.com/cashapp/sqldelight)
-- Asynchronous  streams with [Flow & Coroutines](https://github.com/Kotlin/kotlinx.coroutines)
 - Date and time with [kotlinx-datetime](https://github.com/Kotlin/kotlinx-datetime)
 - HTTP networking with [Ktor](https://ktor.io) and [kotlinx-serialization](https://github.com/Kotlin/kotlinx.serialization)
 
