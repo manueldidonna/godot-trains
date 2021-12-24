@@ -1,0 +1,17 @@
+CREATE TABLE recent_train_station_search (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    train_identifier INTEGER AS Int NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    short_name TEXT NOT NULL
+);
+
+insertNewStationSearch {
+    INSERT OR REPLACE INTO recent_train_station_search(train_identifier, name, short_name)
+    VALUES (?, ?, ?);
+
+    DELETE FROM recent_train_station_search
+    WHERE id NOT IN (SELECT id FROM recent_train_station_search ORDER BY id DESC LIMIT 5);
+}
+
+getRecentStationSearches:
+SELECT train_identifier, name, short_name FROM recent_train_station_search ORDER BY id DESC;

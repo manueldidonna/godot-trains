@@ -17,7 +17,7 @@
 package com.manueldidonna.godottrains
 
 import android.app.Application
-import com.manueldidonna.godottrains.database.SqlDelightDatabase
+import com.manueldidonna.godottrains.data.SqlDelightDatabase
 
 class GodotTrainsApplication : Application() {
     override fun onCreate() {

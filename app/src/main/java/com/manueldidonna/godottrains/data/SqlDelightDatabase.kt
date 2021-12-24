@@ -14,10 +14,11 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.manueldidonna.godottrains.database
+package com.manueldidonna.godottrains.data
 
 import android.content.Context
 import com.manueldidonna.godottrains.AppDatabase
+import com.manueldidonna.godottrains.RecentTrainStationSearchQueries
 import com.squareup.sqldelight.android.AndroidSqliteDriver
 
 object SqlDelightDatabase {
@@ -35,11 +36,7 @@ object SqlDelightDatabase {
         )
     }
 
-    val getStationNamesUseCase by lazy {
-        GetStationNamesUseCase(database!!.trainStationQueries)
-    }
-
-    val saveStationNameUseCase by lazy {
-        SaveStationNameUseCase(database!!.trainStationQueries)
+    val recentTrainStationSearchQueries: RecentTrainStationSearchQueries by lazy {
+        database!!.recentTrainStationSearchQueries
     }
 }

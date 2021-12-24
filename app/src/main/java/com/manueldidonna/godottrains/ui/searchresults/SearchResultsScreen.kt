@@ -14,9 +14,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-@file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.manueldidonna.godottrains.searchresults
+package com.manueldidonna.godottrains.ui.searchresults
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -27,7 +26,8 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
@@ -35,35 +35,21 @@ import androidx.compose.ui.unit.dp
 import com.google.accompanist.insets.navigationBarsHeight
 import com.google.accompanist.insets.navigationBarsPadding
 import com.google.accompanist.insets.statusBarsPadding
-import com.manueldidonna.godottrains.entities.OneWaySolution
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
+import com.manueldidonna.godottrains.data.models.OneWaySolution
+import com.manueldidonna.godottrains.data.models.firstDepartureDateTime
+import com.manueldidonna.godottrains.ui.searchresults.components.OneWaySolutionCard
 import kotlinx.datetime.*
-import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
 
-interface OneWayTrainSolutionsCallback {
-    fun getOneWaySolutions(): StateFlow<List<OneWaySolution>?>
-    suspend fun loadNextOneWaySolutions()
-    fun closeOneWaySolutionsScreen()
-}
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchResultsScreen(callback: OneWayTrainSolutionsCallback) {
-    val updatedCallback by rememberUpdatedState(callback)
-
-    val oneWaySolutionsGroupedByDay by remember(updatedCallback) {
-        updatedCallback.getOneWaySolutions()
-            .map { it?.groupBy { solution -> solution.departureDateTime.date } }
-            .flowOn(Dispatchers.Default)
-    }.collectAsState(emptyMap())
+fun SearchResultsScreen(
+    state: SearchResultsUiState,
+    loadMoreSolutions: () -> Unit,
+    onNavigationUp: () -> Unit
+) {
 
     Box(modifier = Modifier.fillMaxSize()) {
-        if (oneWaySolutionsGroupedByDay == null) {
-            LoadingIndicator(modifier = Modifier.fillMaxSize())
-        }
         val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior() }
         Column(
             modifier = Modifier
@@ -72,22 +58,18 @@ fun SearchResultsScreen(callback: OneWayTrainSolutionsCallback) {
         ) {
             SearchResultsAppBar(
                 scrollBehavior = scrollBehavior,
-                onArrowBackClick = updatedCallback::closeOneWaySolutionsScreen
+                onNavigationUp = onNavigationUp
             )
-            val scope = rememberCoroutineScope()
-            var isLoadingNextSolutions by remember { mutableStateOf(false) }
-            TrainsList(
-                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-                trainsGroupedByDate = oneWaySolutionsGroupedByDay,
-                isLoadingMoreResults = isLoadingNextSolutions,
-                onLoadMoreResultsClick = {
-                    isLoadingNextSolutions = true
-                    scope.launch {
-                        updatedCallback.loadNextOneWaySolutions()
-                        isLoadingNextSolutions = false
-                    }
-                }
-            )
+            if (state !is SearchResultsUiState.Solutions) {
+                LoadingIndicator(modifier = Modifier.weight(1f))
+            } else {
+                TrainsList(
+                    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+                    solutions = state.oneWaySolutions,
+                    isLoadingMoreResults = state.isLoadingMoreSolutions,
+                    onLoadMoreResultsClick = loadMoreSolutions
+                )
+            }
         }
     }
 }
@@ -96,7 +78,7 @@ fun SearchResultsScreen(callback: OneWayTrainSolutionsCallback) {
 @Composable
 private fun SearchResultsAppBar(
     scrollBehavior: TopAppBarScrollBehavior,
-    onArrowBackClick: () -> Unit
+    onNavigationUp: () -> Unit
 ) {
     SmallTopAppBar(
         modifier = Modifier
@@ -104,7 +86,7 @@ private fun SearchResultsAppBar(
             .navigationBarsPadding(bottom = false, start = true, end = true),
         title = { Text("Search results") },
         navigationIcon = {
-            IconButton(onClick = onArrowBackClick) {
+            IconButton(onClick = onNavigationUp) {
                 Icon(
                     imageVector = Icons.Filled.ArrowBack,
                     contentDescription = "Go back"
@@ -122,8 +104,10 @@ private fun LoadingIndicator(modifier: Modifier) {
             modifier = Modifier
                 .fillMaxSize()
                 .wrapContentSize()
+                .size(56.dp)
                 .navigationBarsPadding(),
-            strokeWidth = 8.dp
+            strokeWidth = 8.dp,
+            color = MaterialTheme.colorScheme.primary
         )
     }
 }
@@ -131,35 +115,38 @@ private fun LoadingIndicator(modifier: Modifier) {
 @Composable
 private fun TrainsList(
     modifier: Modifier = Modifier,
-    trainsGroupedByDate: Map<LocalDate, List<OneWaySolution>>?,
+    solutions: List<OneWaySolution>,
     isLoadingMoreResults: Boolean,
     onLoadMoreResultsClick: () -> Unit
 ) {
-    if (trainsGroupedByDate.isNullOrEmpty()) return
     LazyColumn(
         contentPadding = remember { PaddingValues(horizontal = 16.dp) },
         modifier = modifier.navigationBarsPadding(bottom = false, start = true, end = true)
     ) {
-        trainsGroupedByDate.forEach { (date, trains) ->
+        solutions
+            .groupBy { solution -> solution.firstDepartureDateTime.date }
+            .forEach { (date, trains) ->
+                item {
+                    TrainsGroupHeader(departureDate = date)
+                }
+
+                items(trains) { train ->
+                    OneWaySolutionCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        oneWaySolution = train
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+
+        if (solutions.isNotEmpty()) {
             item {
-                TrainsGroupHeader(departureDate = date)
-            }
-
-            items(trains) { train ->
-                OneWaySolutionCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    oneWaySolution = train
+                LoadMoreResultsButton(
+                    isLoading = isLoadingMoreResults,
+                    onClick = onLoadMoreResultsClick
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(Modifier.navigationBarsHeight(additional = 8.dp))
             }
-        }
-
-        item {
-            LoadMoreResultsButton(
-                isLoading = isLoadingMoreResults,
-                onClick = onLoadMoreResultsClick
-            )
-            Spacer(Modifier.navigationBarsHeight(additional = 8.dp))
         }
     }
 }
@@ -174,9 +161,11 @@ private fun TrainsGroupHeader(departureDate: LocalDate) {
             today.plus(1, DateTimeUnit.DAY) -> "Tomorrow"
             else -> {
                 val locale = configuration.locales.get(0)
-                departureDate
-                    .toJavaLocalDate()
-                    .format(DateTimeFormatter.ofPattern("EEEE, dd MMMM", locale))
+                val dayOfWeek = departureDate.dayOfWeek
+                    .getDisplayName(TextStyle.FULL, locale)
+                    .replaceFirstChar { it.titlecase(locale) }
+                val month = departureDate.month.getDisplayName(TextStyle.FULL, locale)
+                "$dayOfWeek, ${departureDate.dayOfMonth} $month"
             }
         }
     }
@@ -184,7 +173,7 @@ private fun TrainsGroupHeader(departureDate: LocalDate) {
         text = dayFullName,
         style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.onSurface,
-        modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)
+        modifier = Modifier.padding(top = 16.dp, bottom = 16.dp)
     )
 }
 

@@ -14,54 +14,46 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.manueldidonna.godottrains.searchtrains
+package com.manueldidonna.godottrains.ui.searchtrains
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.insets.navigationBarsPadding
 import com.google.accompanist.insets.statusBarsPadding
-import kotlinx.coroutines.flow.Flow
-import kotlinx.datetime.LocalDate
-
-interface SearchTrainsCallback {
-    val departureStationName: Flow<String>
-    val arrivalStationName: Flow<String>
-    val departureTimeInMinutes: Flow<Int>
-    val departureDate: Flow<LocalDate>
-    val isSearchAllowed: Flow<Boolean>
-    fun searchDepartureStation()
-    fun searchArrivalStation()
-    fun swapStationNames()
-    fun setDepartureTimeInMinutes(timeInMinutes: Int)
-    fun setDepartureDate(localDate: LocalDate)
-    fun searchOneWaySolutions()
-}
+import com.manueldidonna.godottrains.ui.searchtrains.components.DateTimeInlinePicker
+import kotlinx.datetime.LocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchTrainsScreen(callback: SearchTrainsCallback) {
-    val updatedCallback by rememberUpdatedState(callback)
+fun SearchTrainsScreen(
+    state: SearchTrainsUiState,
+    selectDepartureStation: () -> Unit,
+    selectArrivalStation: () -> Unit,
+    searchOneWaySolutions: () -> Unit,
+    setDepartureDateTime: (LocalDateTime) -> Unit
+) {
     val scrollBehavior = remember { TopAppBarDefaults.pinnedScrollBehavior() }
-    val isSearchAllowed by updatedCallback.isSearchAllowed.collectAsState(false)
-    val departureStationName by updatedCallback.departureStationName.collectAsState("")
-    val arrivalStationName by updatedCallback.arrivalStationName.collectAsState("")
     Scaffold(
         floatingActionButton = {
-            if (isSearchAllowed) {
+            if (state.isSearchAllowed) {
                 LargeFloatingActionButton(
-                    onClick = updatedCallback::searchOneWaySolutions,
+                    onClick = searchOneWaySolutions,
                     modifier = Modifier.navigationBarsPadding()
                 ) {
                     Icon(
@@ -78,15 +70,36 @@ fun SearchTrainsScreen(callback: SearchTrainsCallback) {
         }
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 24.dp)
+                .run { if (state.isSearchAllowed) padding(bottom = 96.dp) else this }
+                .navigationBarsPadding(),
             verticalArrangement = Arrangement.spacedBy(32.dp)
         ) {
-            StationField(label = "Departure station", stationName = departureStationName) {
-                updatedCallback.searchDepartureStation()
+            StationField(
+                label = "Departure station",
+                stationName = state.departureStation?.name,
+                onClick = selectDepartureStation
+            )
+            StationField(
+                label = "Arrival station",
+                stationName = state.arrivalStation?.name,
+                onClick = selectArrivalStation
+            )
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(imageVector = Icons.Filled.CalendarToday, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = "Departure date", style = MaterialTheme.typography.titleSmall)
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                DateTimeInlinePicker(
+                    selection = state.departureDateTime,
+                    onSelectionChange = setDepartureDateTime
+                )
             }
-            StationField(label = "Arrival station", stationName = arrivalStationName) {
-                updatedCallback.searchArrivalStation()
-            }
+
         }
     }
 
@@ -95,12 +108,12 @@ fun SearchTrainsScreen(callback: SearchTrainsCallback) {
 @Composable
 private fun StationField(
     label: String,
-    stationName: String,
+    stationName: String?,
     onClick: () -> Unit
 ) {
     Column {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(imageVector = Icons.Filled.Place, contentDescription = "Location icon")
+            Icon(imageVector = Icons.Filled.Place, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
             Text(text = label, style = MaterialTheme.typography.titleSmall)
         }
@@ -115,7 +128,7 @@ private fun StationField(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Spacer(modifier = Modifier.width(24.dp))
-            if (stationName.isEmpty()) {
+            if (stationName.isNullOrEmpty()) {
                 Text(
                     text = "Choose station",
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = ContentAlpha.medium),

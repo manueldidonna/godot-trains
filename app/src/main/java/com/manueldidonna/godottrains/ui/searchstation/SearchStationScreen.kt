@@ -14,7 +14,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.manueldidonna.godottrains.searchstation
+package com.manueldidonna.godottrains.ui.searchstation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -28,92 +28,90 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ContentAlpha
-import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.insets.navigationBarsHeight
-import com.google.accompanist.insets.navigationBarsPadding
-import com.google.accompanist.insets.statusBarsPadding
+import androidx.compose.ui.zIndex
+import com.google.accompanist.insets.*
 import com.manueldidonna.godottrains.GodotTrainsTheme
 import com.manueldidonna.godottrains.ThemeShapes
-import kotlinx.coroutines.flow.Flow
-
-interface SearchStationsCallback {
-    val recentSearchResults: Flow<List<String>>
-    suspend fun getStationNamesByQuery(query: String): List<String>
-    fun selectStationByName(stationName: String)
-    fun cancelSearchAndGoBack()
-}
+import com.manueldidonna.godottrains.data.models.Station
 
 @Composable
-fun SearchStationScreen(callback: SearchStationsCallback, searchDepartureStation: Boolean) {
-    val updatedCallback by rememberUpdatedState(callback)
+fun SearchStationScreen(
+    state: SearchStationUiState,
+    onNavigationUp: () -> Unit,
+    searchStations: (String) -> Unit,
+    onStationSelection: (Station) -> Unit
+) {
+    val updatedSearchStations by rememberUpdatedState(searchStations)
 
-    Column(
+    val (query, setQuery) = rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue(""))
+    }
+
+    LaunchedEffect(query.text) {
+        updatedSearchStations(query.text)
+    }
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
     ) {
         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
-            val recentSearchResults by updatedCallback
-                .recentSearchResults
-                .collectAsState(emptyList())
-
-            val (query, setQuery) = remember { mutableStateOf(TextFieldValue("")) }
-
-            var isLoading by remember { mutableStateOf(false) }
-
-            val stationNames by produceState(emptyList<String>(), key1 = query) {
-                isLoading = query.text.isNotBlank()
-                value = updatedCallback.getStationNamesByQuery(query.text)
-                isLoading = false
-            }
-
             val focusRequester = remember { FocusRequester() }
-            
-            LaunchedEffect(key1 = stationNames.isEmpty()) {
-                if (stationNames.isEmpty()) focusRequester.requestFocus()
+
+            LaunchedEffect(state.searchResults.isEmpty()) {
+                if (state.searchResults.isEmpty()) focusRequester.requestFocus()
             }
 
             SearchStationAppBar(
-                hint = if (searchDepartureStation) "Search departure station" else "Search arrival station",
+                hint = state.searchHint,
                 query = query,
                 onQueryChange = setQuery,
-                onBackArrowClick = updatedCallback::cancelSearchAndGoBack,
-                isLoading = isLoading,
+                onBackArrowClick = onNavigationUp,
+                isLoading = state.isSearchingStations,
                 focusRequester = focusRequester
             )
 
             LazyColumn(
-                modifier = Modifier.navigationBarsPadding(bottom = false, start = true, end = true)
+                modifier = Modifier
+                    .navigationBarsPadding(bottom = false, start = true, end = true)
+                    .imePadding(),
             ) {
-                if (recentSearchResults.isNotEmpty()) {
+                item {
+                    Spacer(modifier = Modifier.statusBarsHeight(additional = 64.dp))
+                }
+
+                if (state.recentSearches.isNotEmpty()) {
                     item {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        RecentSearches(recentResults = recentSearchResults, onClick = { text ->
-                            setQuery(TextFieldValue(text, selection = TextRange(text.length)))
-                        })
+                        RecentSearches(
+                            recentResults = state.recentSearches,
+                            onClick = onStationSelection
+                        )
                     }
                 }
-                items(stationNames, key = { it }) { stationName ->
+                item {
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+                items(state.searchResults, key = { it.id }) { station ->
                     StationResult(
-                        stationName = stationName,
-                        onClick = { updatedCallback.selectStationByName(stationName) }
+                        stationName = station.name,
+                        onClick = { onStationSelection(station) }
                     )
                 }
                 item { Spacer(modifier = Modifier.navigationBarsHeight()) }
@@ -133,19 +131,21 @@ private fun SearchStationAppBar(
 ) {
     Surface(
         color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 0.dp,
-        modifier = Modifier.fillMaxWidth()
+        tonalElevation = 3.dp,
+        shape = CircleShape,
+        modifier = Modifier
+            .fillMaxWidth()
+            .statusBarsPadding()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .zIndex(8f)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .statusBarsPadding()
-                .padding(horizontal = 16.dp, vertical = 16.dp)
-                .height(56.dp)
-                .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
-                .clip(CircleShape),
+                .height(48.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            val contentColor = LocalContentColor.current
             IconButton(
                 onClick = onBackArrowClick,
                 modifier = Modifier.padding(start = 4.dp, end = 4.dp)
@@ -157,10 +157,9 @@ private fun SearchStationAppBar(
                     Text(
                         text = hint,
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = ContentAlpha.medium)
+                        color = contentColor.copy(alpha = ContentAlpha.medium)
                     )
                 }
-                val cursorColor = MaterialTheme.colorScheme.onSurfaceVariant
                 BasicTextField(
                     value = query,
                     onValueChange = onQueryChange,
@@ -168,18 +167,16 @@ private fun SearchStationAppBar(
                     keyboardOptions = remember {
                         KeyboardOptions(autoCorrect = false, imeAction = ImeAction.Search)
                     },
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    ),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = contentColor),
                     modifier = Modifier
                         .fillMaxWidth()
                         .focusRequester(focusRequester),
-                    cursorBrush = remember(cursorColor) { SolidColor(cursorColor) }
+                    cursorBrush = remember(contentColor) { SolidColor(contentColor) }
                 )
             }
             if (isLoading) {
                 CircularProgressIndicator(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = contentColor,
                     strokeWidth = 4.dp,
                     modifier = Modifier
                         .padding(horizontal = 12.dp)
@@ -191,8 +188,9 @@ private fun SearchStationAppBar(
 }
 
 @Composable
-private fun RecentSearches(recentResults: List<String>, onClick: (String) -> Unit) {
+private fun RecentSearches(recentResults: List<Station>, onClick: (Station) -> Unit) {
     Column {
+        Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = "Recent searches",
             style = MaterialTheme.typography.titleSmall,
@@ -205,7 +203,7 @@ private fun RecentSearches(recentResults: List<String>, onClick: (String) -> Uni
         ) {
             items(recentResults) { result ->
                 RecentSearchChip(
-                    text = result,
+                    text = result.name,
                     onClick = { onClick(result) }
                 )
             }
@@ -219,7 +217,6 @@ private fun RecentSearchChip(text: String, onClick: () -> Unit) {
     Text(
         text = text,
         style = MaterialTheme.typography.labelLarge,
-        fontWeight = FontWeight.Medium,
         color = MaterialTheme.colorScheme.onSurface,
         modifier = Modifier
             .clip(ThemeShapes.Chip)
@@ -252,19 +249,6 @@ private fun StationResult(stationName: String, onClick: () -> Unit) {
             text = stationName,
             style = MaterialTheme.typography.bodyLarge
         )
-    }
-}
-
-@Preview
-@Composable
-private fun PreviewRecentSearches() {
-    GodotTrainsTheme {
-        Surface {
-            RecentSearches(
-                recentResults = listOf("Torre del Greco", "Napoli P. Garibaldi"),
-                onClick = {}
-            )
-        }
     }
 }
 

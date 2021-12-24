@@ -14,16 +14,14 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.manueldidonna.godottrains.searchresults
+package com.manueldidonna.godottrains.ui.searchresults.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Timelapse
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,21 +36,15 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.manueldidonna.godottrains.GodotTrainsTheme
 import com.manueldidonna.godottrains.ThemeShapes
-import com.manueldidonna.godottrains.entities.OneWaySolution
-import com.manueldidonna.godottrains.entities.Train
-import kotlinx.datetime.Clock
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
+import com.manueldidonna.godottrains.data.models.OneWaySolution
+import com.manueldidonna.godottrains.data.models.Train
+import kotlinx.datetime.*
 
 @Composable
 fun OneWaySolutionCard(
     modifier: Modifier = Modifier,
     oneWaySolution: OneWaySolution
 ) {
-    val today = remember {
-        Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-    }
     TrainCard(modifier = modifier) {
         Column(modifier = Modifier.padding(16.dp)) {
             oneWaySolution.trains.forEach { train ->
@@ -61,12 +53,7 @@ fun OneWaySolutionCard(
                     style = MaterialTheme.typography.headlineSmall,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                StartStopStations(
-                    departureStation = "Torre del Greco",
-                    arrivalStation = "Napoli Piazza Garibaldi",
-                    departureDateTime = today,
-                    arrivalDateTime = today
-                )
+                StartStopStations(train)
                 Spacer(modifier = Modifier.height(24.dp))
             }
             DashedDivider()
@@ -79,37 +66,27 @@ fun OneWaySolutionCard(
 @Composable
 private fun TrainCard(modifier: Modifier, content: @Composable () -> Unit) {
     // TODO: remove when M3 card support will be added
-    Card(
+    Surface(
         shape = ThemeShapes.Card,
-        modifier = modifier,
-        elevation = 0.dp,
-        backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
-        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-    ) {
-        CompositionLocalProvider(
-            LocalContentColor provides MaterialTheme.colorScheme.onSurfaceVariant,
-            content = content
-        )
-    }
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        content = content,
+        modifier = modifier
+    )
 }
 
 @Composable
-private fun StartStopStations(
-    departureStation: String,
-    departureDateTime: LocalDateTime,
-    arrivalStation: String,
-    arrivalDateTime: LocalDateTime
-) {
+private fun StartStopStations(train: Train) {
     Layout(
         modifier = Modifier.padding(start = 16.dp),
         content = {
             StationInfo(
-                stationName = departureStation,
-                arriveAt = departureDateTime,
+                stationName = train.departureStation,
+                arriveAt = train.departureDateTime,
             )
             StationInfo(
-                stationName = arrivalStation,
-                arriveAt = arrivalDateTime,
+                stationName = train.arrivalStation,
+                arriveAt = train.arrivalDateTime,
             )
             TrackBetweenStations(
                 modifier = Modifier.fillMaxHeight(),
@@ -227,11 +204,18 @@ private fun TravelTimeLabel(timeInMinutes: Int) {
 private fun PreviewTrainSolutionDetails() {
     GodotTrainsTheme(darkTheme = false) {
         Surface {
+            val now = Clock.System.now()
+            val timeZone = TimeZone.currentSystemDefault()
+            val train = Train(
+                name = "MET 21300",
+                departureStation = "Torre del Greco",
+                departureDateTime = now.toLocalDateTime(timeZone),
+                arrivalStation = "Napoli Piazza Garibaldi",
+                arrivalDateTime = now.plus(21, DateTimeUnit.MINUTE).toLocalDateTime(timeZone)
+            )
             val solution = OneWaySolution(
-                trains = listOf(Train("MET 21300")),
-                departureDateTime = Clock.System.now()
-                    .toLocalDateTime(TimeZone.currentSystemDefault()),
-                priceInEuro = 2.20,
+                id = "",
+                trains = listOf(train),
                 durationInMinutes = 21
             )
             Column {
@@ -246,7 +230,11 @@ private fun PreviewTrainSolutionDetails() {
                     )
                 }
 
-                TrackBetweenStations(Modifier.height(160.dp), stationPointCircleRadius = 8.dp, trackWidth = 3.dp)
+                TrackBetweenStations(
+                    Modifier.height(160.dp),
+                    stationPointCircleRadius = 8.dp,
+                    trackWidth = 3.dp
+                )
             }
         }
     }
