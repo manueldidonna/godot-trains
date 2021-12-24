@@ -2,12 +2,7 @@
 
 Godot Trains is an Android app to search for train times in Italy.
 
-<p>
-  <img width="24%" src="art/search_trains_light.png?raw=true">
-  <img width="24%" src="art/search_trains_dark.png?raw=true">
-  <img width="24%" src="art/search_stations_light.png?raw=true">
-  <img width="24%" src="art/train_solutions_light.png?raw=true">
-</p>
+<img src="art/banner.png?raw=true">
 
 :rocket: [Download APK](https://github.com/manueldidonna/godot-trains/releases)
 
