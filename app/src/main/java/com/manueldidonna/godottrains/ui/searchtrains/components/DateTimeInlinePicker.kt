@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
@@ -88,9 +89,20 @@ private fun TimesRow(selection: LocalDateTime, onSelectionChange: (LocalDateTime
     val selectedLocalTime = remember(selection) {
         LocalTime(selection.hour.coerceIn(6, 21), selection.minute)
     }
+
+    val listState = rememberLazyListState()
+    LaunchedEffect(selectedLocalTime) {
+        val itemIndex = selectedLocalTime.hour - 6
+        val visibleItemsInfo = listState.layoutInfo.visibleItemsInfo
+        if (itemIndex !in visibleItemsInfo.first().index..visibleItemsInfo.last().index) {
+            listState.scrollToItem(itemIndex)
+        }
+    }
+
     LazyRow(
         modifier = Modifier.padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        state = listState
     ) {
         items(16) {
             TimeChip(

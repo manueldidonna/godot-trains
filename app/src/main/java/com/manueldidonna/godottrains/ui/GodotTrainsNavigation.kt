@@ -38,10 +38,10 @@ fun GodotTrainsNavigation() {
         composable(SearchTrainsRoute) {
             SearchTrainsRoute(
                 viewModel = viewModel,
-                selectDepartureStation = {
+                searchDepartureStation = {
                     navController.navigate(SearchStations.createRouteFromArguments(isDeparture = true))
                 },
-                selectArrivalStation = {
+                searchArrivalStation = {
                     navController.navigate(SearchStations.createRouteFromArguments(isDeparture = false))
                 },
                 navigateToSearchResults = {

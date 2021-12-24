@@ -10,8 +10,8 @@ import com.manueldidonna.godottrains.ui.isSearchTrainsAllowed
 @Composable
 fun SearchTrainsRoute(
     viewModel: TrainsViewModel,
-    selectDepartureStation: () -> Unit,
-    selectArrivalStation: () -> Unit,
+    searchDepartureStation: () -> Unit,
+    searchArrivalStation: () -> Unit,
     navigateToSearchResults: () -> Unit
 ) {
     val viewModelState by viewModel.viewModelState.collectAsState()
@@ -28,8 +28,10 @@ fun SearchTrainsRoute(
 
     SearchTrainsScreen(
         state = state,
-        selectArrivalStation = selectArrivalStation,
-        selectDepartureStation = selectDepartureStation,
+        searchDepartureStation = searchDepartureStation,
+        searchArrivalStation = searchArrivalStation,
+        setDepartureStation = viewModel::setDepartureStation,
+        setArrivalStation = viewModel::setArrivalStation,
         searchOneWaySolutions = {
             viewModel.searchOneWaySolutions()
             navigateToSearchResults()
