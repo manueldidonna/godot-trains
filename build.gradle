@@ -22,7 +22,6 @@ subprojects {
     repositories {
         google()
         mavenCentral()
-        jcenter()
     }
 
     apply plugin: 'com.diffplug.spotless'

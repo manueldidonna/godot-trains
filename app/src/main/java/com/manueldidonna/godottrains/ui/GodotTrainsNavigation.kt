@@ -17,29 +17,34 @@
 package com.manueldidonna.godottrains.ui
 
 import androidx.annotation.Keep
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.animation.*
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalTextInputService
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
+import androidx.navigation.*
+import com.google.accompanist.navigation.animation.AnimatedNavHost
+import com.google.accompanist.navigation.animation.composable
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.manueldidonna.godottrains.ui.searchresults.SearchResultsRoute
 import com.manueldidonna.godottrains.ui.searchstation.SearchStationRoute
 import com.manueldidonna.godottrains.ui.searchtrains.SearchTrainsRoute
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun GodotTrainsNavigation() {
-    val navController = rememberNavController()
+    val navController = rememberAnimatedNavController()
     val viewModel = viewModel<TrainsViewModel>()
 
     HideKeyboardOnNavigationChange(navController)
-    NavHost(navController, startDestination = SearchTrainsRoute) {
+
+    DefaultAnimatedNavHost(navController, startDestination = SearchTrainsRoute) {
         composable(SearchTrainsRoute) {
             SearchTrainsRoute(
                 viewModel = viewModel,
@@ -87,6 +92,79 @@ private fun HideKeyboardOnNavigationChange(navController: NavController) {
         }
     }
 }
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+private fun DefaultAnimatedNavHost(
+    navController: NavHostController,
+    startDestination: String,
+    builder: NavGraphBuilder.() -> Unit
+) {
+    val density = LocalDensity.current
+    AnimatedNavHost(
+        navController = navController,
+        startDestination = startDestination,
+        builder = builder,
+        enterTransition = {
+            sharedAxisXTransitionIn(density, forward = true)
+        },
+        popEnterTransition = {
+            sharedAxisXTransitionIn(density, forward = false)
+        },
+        exitTransition = {
+            sharedAxisXTransitionOut(density, forward = true)
+        },
+        popExitTransition = {
+            sharedAxisXTransitionOut(density, forward = false)
+        }
+    )
+}
+
+
+@Stable
+private fun sharedAxisXTransitionIn(density: Density, forward: Boolean): EnterTransition {
+    val slideDistancePx = with(density) { SharedAxisX.SlideDistance.roundToPx() }
+    return slideInHorizontally(
+        initialOffsetX = { if (forward) slideDistancePx else -slideDistancePx },
+        animationSpec = tween(
+            durationMillis = SharedAxisX.Duration,
+            easing = FastOutSlowInEasing
+        )
+    ) + fadeIn(
+        animationSpec = tween(
+            durationMillis = SharedAxisX.DurationForIncoming,
+            delayMillis = SharedAxisX.DurationForOutgoing,
+            easing = LinearOutSlowInEasing
+        )
+    )
+}
+
+@Stable
+private fun sharedAxisXTransitionOut(density: Density, forward: Boolean): ExitTransition {
+    val slideDistancePx = with(density) { SharedAxisX.SlideDistance.roundToPx() }
+    return slideOutHorizontally(
+        targetOffsetX = { if (forward) -slideDistancePx else slideDistancePx },
+        animationSpec = tween(
+            durationMillis = SharedAxisX.Duration,
+            easing = FastOutSlowInEasing
+        )
+    ) + fadeOut(
+        animationSpec = tween(
+            durationMillis = SharedAxisX.DurationForOutgoing,
+            delayMillis = 0,
+            easing = FastOutLinearInEasing
+        )
+    )
+}
+
+private object SharedAxisX {
+    val SlideDistance = 30.dp
+
+    const val Duration = 300
+    const val DurationForOutgoing = (Duration * 0.35f).toInt()
+    const val DurationForIncoming = Duration - DurationForOutgoing
+}
+
 
 @Keep
 private const val SearchTrainsRoute = "search_trains"
