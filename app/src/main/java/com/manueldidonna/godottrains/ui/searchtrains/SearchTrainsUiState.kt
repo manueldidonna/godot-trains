@@ -9,10 +9,4 @@ data class SearchTrainsUiState(
     val departureDateTime: LocalDateTime,
     val recentStationSearches: List<Station>,
     val isSearchAllowed: Boolean
-) {
-    val recentStationSearchesWithoutSelectedStations: List<Station> by lazy {
-        recentStationSearches.filter {
-            it.id != arrivalStation?.id && it.id != departureStation?.id
-        }
-    }
-}
+)

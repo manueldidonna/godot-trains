@@ -16,10 +16,10 @@
  */
 package com.manueldidonna.godottrains.ui.searchtrains
 
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.*
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -33,10 +33,17 @@ import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.google.accompanist.insets.navigationBarsPadding
@@ -68,7 +75,8 @@ fun SearchTrainsScreen(
             exit = fadeOut(tween(180))
         ) {
             LargeFloatingActionButton(
-                onClick = searchOneWaySolutions, modifier = Modifier
+                onClick = searchOneWaySolutions,
+                modifier = Modifier
                     .padding(16.dp)
                     .navigationBarsPadding()
             ) {
@@ -83,6 +91,7 @@ fun SearchTrainsScreen(
             SearchAppBar(scrollBehavior = scrollBehavior)
             Column(
                 modifier = Modifier
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
                     .verticalScroll(rememberScrollState())
                     .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 24.dp)
                     .run { if (state.isSearchAllowed) padding(bottom = 96.dp) else this }
@@ -93,14 +102,14 @@ fun SearchTrainsScreen(
                     label = "Departure station",
                     stationName = state.departureStation?.name,
                     onClick = searchDepartureStation,
-                    recentStationSearches = state.recentStationSearchesWithoutSelectedStations,
+                    recentStationSearches = state.recentStationSearches,
                     onStationSelection = setDepartureStation
                 )
                 StationField(
                     label = "Arrival station",
                     stationName = state.arrivalStation?.name,
                     onClick = searchArrivalStation,
-                    recentStationSearches = state.recentStationSearchesWithoutSelectedStations,
+                    recentStationSearches = state.recentStationSearches,
                     onStationSelection = setArrivalStation
                 )
                 Column {
@@ -137,55 +146,115 @@ private fun StationField(
             Text(text = label, style = MaterialTheme.typography.titleSmall)
         }
         Spacer(modifier = Modifier.height(16.dp))
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(64.dp)
                 .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                 .clip(CircleShape)
-                .clickable(onClick = onClick),
-            verticalAlignment = Alignment.CenterVertically
         ) {
-            Spacer(modifier = Modifier.width(24.dp))
-            if (stationName.isNullOrEmpty()) {
-                Text(
-                    text = "Choose station",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = ContentAlpha.medium),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                if (recentStationSearches.isNotEmpty()) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.End),
-                        modifier = Modifier.weight(1f),
-                        contentPadding = remember { PaddingValues(start = 32.dp, end = 16.dp) }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable(onClick = onClick)
+            ) {
+                Spacer(modifier = Modifier.width(24.dp))
+                if (stationName.isNullOrEmpty()) {
+                    Text(
+                        text = "Choose station",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = ContentAlpha.medium),
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier
+                    )
+                } else {
+                    Text(
+                        text = stationName,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    IconButton(
+                        onClick = { onStationSelection(null) },
+                        modifier = Modifier.padding(start = 4.dp, end = 12.dp)
                     ) {
-                        items(recentStationSearches) { station ->
-                            RecentStationSearchChip(
-                                text = station.name,
-                                onClick = { onStationSelection(station) }
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Filled.Close,
+                            contentDescription = "Cancel station selection",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
-            } else {
-                Text(
-                    text = stationName,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.weight(1f)
-                )
-                IconButton(
-                    onClick = { onStationSelection(null) },
-                    modifier = Modifier.padding(start = 4.dp, end = 12.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Close,
-                        contentDescription = "Cancel station selection",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
             }
+
+            androidx.compose.animation.AnimatedVisibility(
+                visible = stationName.isNullOrEmpty() && recentStationSearches.isNotEmpty(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable(onClick = onClick),
+                enter = slideInHorizontally(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioLowBouncy,
+                        stiffness = Spring.StiffnessMediumLow
+                    ),
+                    initialOffsetX = { it }
+                ),
+                exit = slideOutHorizontally(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioNoBouncy,
+                        stiffness = Spring.StiffnessMedium
+                    ),
+                    targetOffsetX = { it }
+                )
+            ) {
+                RecentStationsRow(
+                    stations = recentStationSearches,
+                    onSelection = onStationSelection
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RecentStationsRow(
+    stations: List<Station>,
+    onSelection: (Station) -> Unit
+) {
+    val scrolledWidth = rememberSaveable { mutableStateOf(0f) }
+    val scrolledWidthThreshold = with(LocalDensity.current) { 104.dp.toPx() }
+
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPostScroll(
+                consumed: Offset,
+                available: Offset,
+                source: NestedScrollSource
+            ): Offset {
+                scrolledWidth.value = (scrolledWidth.value - consumed.x)
+                    .coerceIn(0f, scrolledWidthThreshold)
+                return Offset.Zero
+            }
+        }
+    }
+
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.End),
+        contentPadding = remember { PaddingValues(start = 200.dp, end = 24.dp) },
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .nestedScroll(nestedScrollConnection)
+            .background(
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(
+                    alpha = (scrolledWidth.value / scrolledWidthThreshold)
+                )
+            )
+    ) {
+        items(stations) { station ->
+            RecentStationSearchChip(
+                text = station.name,
+                onClick = { onSelection(station) }
+            )
         }
     }
 }
