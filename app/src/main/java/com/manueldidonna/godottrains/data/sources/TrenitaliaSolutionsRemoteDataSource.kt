@@ -14,8 +14,9 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import javax.inject.Inject
 
-class TrenitaliaSolutionsRemoteDataSource(private val client: HttpClient) {
+class TrenitaliaSolutionsRemoteDataSource @Inject constructor(private val client: HttpClient) {
 
     companion object {
         private const val Endpoint =

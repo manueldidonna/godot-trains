@@ -7,8 +7,9 @@ import com.squareup.sqldelight.runtime.coroutines.mapToList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-class StationsLocalDataSource(
+class StationsLocalDataSource @Inject constructor(
     private val recentTrainStationSearchQueries: RecentTrainStationSearchQueries
 ) {
     fun getRecentStationSearches(): Flow<List<Station>> {

@@ -27,7 +27,9 @@ import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import com.manueldidonna.godottrains.EdgeToEdgeContent
 import com.manueldidonna.godottrains.GodotTrainsTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

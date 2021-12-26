@@ -17,11 +17,7 @@
 package com.manueldidonna.godottrains
 
 import android.app.Application
-import com.manueldidonna.godottrains.data.SqlDelightDatabase
+import dagger.hilt.android.HiltAndroidApp
 
-class GodotTrainsApplication : Application() {
-    override fun onCreate() {
-        super.onCreate()
-        SqlDelightDatabase.init(this)
-    }
-}
+@HiltAndroidApp
+class GodotTrainsApplication : Application()

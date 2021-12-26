@@ -18,18 +18,11 @@ package com.manueldidonna.godottrains.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.manueldidonna.godottrains.data.SqlDelightDatabase
 import com.manueldidonna.godottrains.data.models.OneWaySolution
 import com.manueldidonna.godottrains.data.models.Station
 import com.manueldidonna.godottrains.data.repositories.SolutionsRepository
 import com.manueldidonna.godottrains.data.repositories.StationsRepository
-import com.manueldidonna.godottrains.data.sources.StationsLocalDataSource
-import com.manueldidonna.godottrains.data.sources.TrenitaliaSolutionsRemoteDataSource
-import com.manueldidonna.godottrains.data.sources.TrenitaliaStationsRemoteDataSource
-import io.ktor.client.*
-import io.ktor.client.engine.okhttp.*
-import io.ktor.client.features.json.*
-import io.ktor.client.features.json.serializer.*
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,6 +31,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.datetime.*
+import javax.inject.Inject
 
 data class TrainsViewModelState(
     val recentStationSearches: List<Station> = emptyList(),
@@ -55,27 +49,11 @@ data class TrainsViewModelState(
 val TrainsViewModelState.isSearchTrainsAllowed: Boolean
     get() = departureStation != null && arrivalStation != null && arrivalStation != departureStation
 
-class TrainsViewModel : ViewModel() {
-
-    // TODO: remove from viewmodel
-    private val client = HttpClient(OkHttp) {
-        install(JsonFeature) {
-            serializer = KotlinxSerializer(kotlinx.serialization.json.Json {
-                ignoreUnknownKeys = true
-            })
-        }
-    }
-
-    // TODO: get repositories as dependencies
-    private val stationsRepository = StationsRepository(
-        trenitaliaStationsRemoteDataSource = TrenitaliaStationsRemoteDataSource(client),
-        stationsLocalDataSource = StationsLocalDataSource(SqlDelightDatabase.recentTrainStationSearchQueries)
-    )
-
-    // TODO: get repositories as dependencies
-    private val solutionsRepository = SolutionsRepository(
-        trenitaliaSolutionsRemoteDataSource = TrenitaliaSolutionsRemoteDataSource(client)
-    )
+@HiltViewModel
+class TrainsViewModel @Inject constructor(
+    private val stationsRepository: StationsRepository,
+    private val solutionsRepository: SolutionsRepository
+) : ViewModel() {
 
     init {
         viewModelScope.launch {

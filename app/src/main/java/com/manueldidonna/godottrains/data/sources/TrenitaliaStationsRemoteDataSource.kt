@@ -6,9 +6,10 @@ import io.ktor.client.*
 import io.ktor.client.request.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import javax.inject.Inject
 
 
-class TrenitaliaStationsRemoteDataSource(private val client: HttpClient) {
+class TrenitaliaStationsRemoteDataSource @Inject constructor(private val client: HttpClient) {
     suspend fun searchStations(partialName: String): List<Station> {
         if (partialName.isBlank()) return emptyList()
         return try {

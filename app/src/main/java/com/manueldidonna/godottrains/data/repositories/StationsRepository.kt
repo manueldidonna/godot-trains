@@ -4,8 +4,9 @@ import com.manueldidonna.godottrains.data.models.Station
 import com.manueldidonna.godottrains.data.sources.StationsLocalDataSource
 import com.manueldidonna.godottrains.data.sources.TrenitaliaStationsRemoteDataSource
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
-class StationsRepository(
+class StationsRepository @Inject constructor(
     private val trenitaliaStationsRemoteDataSource: TrenitaliaStationsRemoteDataSource,
     private val stationsLocalDataSource: StationsLocalDataSource
 ) {
