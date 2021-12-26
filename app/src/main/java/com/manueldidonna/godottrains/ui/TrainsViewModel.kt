@@ -18,6 +18,7 @@ package com.manueldidonna.godottrains.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.manueldidonna.godottrains.data.SqlDelightDatabase
 import com.manueldidonna.godottrains.data.models.OneWaySolution
 import com.manueldidonna.godottrains.data.models.Station
 import com.manueldidonna.godottrains.data.repositories.SolutionsRepository
@@ -25,7 +26,6 @@ import com.manueldidonna.godottrains.data.repositories.StationsRepository
 import com.manueldidonna.godottrains.data.sources.StationsLocalDataSource
 import com.manueldidonna.godottrains.data.sources.TrenitaliaSolutionsRemoteDataSource
 import com.manueldidonna.godottrains.data.sources.TrenitaliaStationsRemoteDataSource
-import com.manueldidonna.godottrains.data.SqlDelightDatabase
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.features.json.*

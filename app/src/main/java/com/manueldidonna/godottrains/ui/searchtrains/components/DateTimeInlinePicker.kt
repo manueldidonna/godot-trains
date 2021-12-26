@@ -87,7 +87,13 @@ private data class LocalTime(val hour: Int, val minute: Int)
 @Composable
 private fun TimesRow(selection: LocalDateTime, onSelectionChange: (LocalDateTime) -> Unit) {
     val selectedLocalTime = remember(selection) {
-        LocalTime(selection.hour.coerceIn(6, 21), selection.minute)
+        if (selection.hour < 6) {
+            LocalTime(6, 0)
+        } else if (selection.hour > 21) {
+            LocalTime(21, 30)
+        } else {
+            LocalTime(selection.hour, selection.minute)
+        }
     }
 
     val listState = rememberLazyListState()

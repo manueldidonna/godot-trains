@@ -16,6 +16,12 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
 class TrenitaliaSolutionsRemoteDataSource(private val client: HttpClient) {
+
+    companion object {
+        private const val Endpoint =
+            "http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/soluzioniViaggioNew"
+    }
+
     suspend fun getOneWaySolutions(
         departureStationId: Int,
         arrivalStationId: Int,
@@ -23,7 +29,7 @@ class TrenitaliaSolutionsRemoteDataSource(private val client: HttpClient) {
     ): List<OneWaySolution> {
         try {
             return client
-                .get<OneWaySolutionsApiModel>("http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/soluzioniViaggioNew/$departureStationId/$arrivalStationId/$departureDateTime:00")
+                .get<OneWaySolutionsApiModel>("$Endpoint/$departureStationId/$arrivalStationId/${departureDateTime.coerce()}:00")
                 .solutions
                 .map { apiSolution ->
                     OneWaySolution(
@@ -44,6 +50,19 @@ class TrenitaliaSolutionsRemoteDataSource(private val client: HttpClient) {
             Log.d("Get solutions", e.toString())
             return emptyList()
         }
+    }
+
+    private fun LocalDateTime.coerce(): LocalDateTime {
+        if (hour !in 6..22) {
+            return LocalDateTime(
+                year = year,
+                monthNumber = monthNumber,
+                dayOfMonth = dayOfMonth,
+                hour = hour.coerceIn(6, 22),
+                minute = minute
+            )
+        }
+        return this
     }
 
     private fun prettifyCategoryName(category: String): String {
