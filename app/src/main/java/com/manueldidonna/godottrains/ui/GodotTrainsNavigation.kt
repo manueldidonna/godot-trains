@@ -18,7 +18,12 @@ package com.manueldidonna.godottrains.ui
 
 import androidx.annotation.Keep
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.platform.LocalTextInputService
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -33,8 +38,8 @@ fun GodotTrainsNavigation() {
     val navController = rememberNavController()
     val viewModel = viewModel<TrainsViewModel>()
 
+    HideKeyboardOnNavigationChange(navController)
     NavHost(navController, startDestination = SearchTrainsRoute) {
-
         composable(SearchTrainsRoute) {
             SearchTrainsRoute(
                 viewModel = viewModel,
@@ -64,6 +69,21 @@ fun GodotTrainsNavigation() {
                 viewModel = viewModel,
                 onNavigationUp = navController::navigateUp
             )
+        }
+    }
+}
+
+@Composable
+private fun HideKeyboardOnNavigationChange(navController: NavController) {
+    val textInputService = LocalTextInputService.current
+    val updatedTextInputService by rememberUpdatedState(textInputService)
+    DisposableEffect(navController) {
+        val listener = NavController.OnDestinationChangedListener { _, _, _ ->
+            updatedTextInputService?.hideSoftwareKeyboard()
+        }
+        navController.addOnDestinationChangedListener(listener)
+        onDispose {
+            navController.removeOnDestinationChangedListener(listener)
         }
     }
 }
