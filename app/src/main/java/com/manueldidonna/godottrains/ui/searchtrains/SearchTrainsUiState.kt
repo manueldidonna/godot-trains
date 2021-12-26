@@ -8,5 +8,6 @@ data class SearchTrainsUiState(
     val arrivalStation: Station?,
     val departureDateTime: LocalDateTime,
     val recentStationSearches: List<Station>,
-    val isSearchAllowed: Boolean
+    val isSearchAllowed: Boolean,
+    val isConnectedToNetwork: Boolean
 )

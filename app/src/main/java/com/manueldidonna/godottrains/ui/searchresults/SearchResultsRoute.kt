@@ -27,6 +27,7 @@ fun SearchResultsRoute(
     SearchResultsScreen(
         state = state,
         onNavigationUp = onNavigationUp,
-        loadMoreSolutions = viewModel::loadMoreOneWaySolutions
+        loadMoreSolutions = viewModel::loadMoreOneWaySolutions,
+        retrySearch = viewModel::searchOneWaySolutions
     )
 }

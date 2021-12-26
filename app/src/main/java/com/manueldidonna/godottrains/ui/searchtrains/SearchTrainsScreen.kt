@@ -46,8 +46,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.navigationBarsPadding
-import com.google.accompanist.insets.statusBarsPadding
 import com.manueldidonna.godottrains.ThemeShapes
 import com.manueldidonna.godottrains.data.models.Station
 import com.manueldidonna.godottrains.ui.searchtrains.components.DateTimeInlinePicker
@@ -87,8 +87,13 @@ fun SearchTrainsScreen(
                 )
             }
         }
+
+
         Column {
-            SearchAppBar(scrollBehavior = scrollBehavior)
+            SearchAppBar(
+                scrollBehavior = scrollBehavior,
+                isConnectedToNetwork = state.isConnectedToNetwork
+            )
             Column(
                 modifier = Modifier
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
@@ -278,12 +283,43 @@ private fun RecentStationSearchChip(text: String, onClick: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SearchAppBar(scrollBehavior: TopAppBarScrollBehavior) {
-    SmallTopAppBar(
-        modifier = Modifier
-            .statusBarsPadding()
-            .navigationBarsPadding(bottom = false, start = true, end = true),
-        title = { Text("Search") },
-        scrollBehavior = scrollBehavior
-    )
+private fun SearchAppBar(
+    scrollBehavior: TopAppBarScrollBehavior,
+    isConnectedToNetwork: Boolean
+) {
+    Column {
+        val windowInsets = LocalWindowInsets.current
+        val density = LocalDensity.current
+        val statusBarHeight = remember(windowInsets) {
+            with(density) { windowInsets.statusBars.top.toDp() }
+        }
+
+        AnimatedVisibility(visible = !isConnectedToNetwork) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.errorContainer)
+                    .zIndex(8f)
+            ) {
+                Text(
+                    text = "No internet connections",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(top = statusBarHeight + 12.dp, bottom = 12.dp)
+                )
+            }
+        }
+
+        AnimatedVisibility(visible = isConnectedToNetwork) {
+            Spacer(modifier = Modifier.height(statusBarHeight))
+        }
+
+        SmallTopAppBar(
+            modifier = Modifier.navigationBarsPadding(bottom = false, start = true, end = true),
+            title = { Text("Search") },
+            scrollBehavior = scrollBehavior
+        )
+    }
 }

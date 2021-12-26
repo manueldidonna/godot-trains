@@ -28,9 +28,11 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.insets.navigationBarsHeight
 import com.google.accompanist.insets.navigationBarsPadding
@@ -46,7 +48,8 @@ import java.time.format.TextStyle
 fun SearchResultsScreen(
     state: SearchResultsUiState,
     loadMoreSolutions: () -> Unit,
-    onNavigationUp: () -> Unit
+    retrySearch: () -> Unit,
+    onNavigationUp: () -> Unit,
 ) {
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -67,7 +70,8 @@ fun SearchResultsScreen(
                     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                     solutions = state.oneWaySolutions,
                     isLoadingMoreResults = state.isLoadingMoreSolutions,
-                    onLoadMoreResultsClick = loadMoreSolutions
+                    onLoadMoreResultsClick = loadMoreSolutions,
+                    retrySearch = retrySearch
                 )
             }
         }
@@ -117,11 +121,14 @@ private fun TrainsList(
     modifier: Modifier = Modifier,
     solutions: List<OneWaySolution>,
     isLoadingMoreResults: Boolean,
-    onLoadMoreResultsClick: () -> Unit
+    onLoadMoreResultsClick: () -> Unit,
+    retrySearch: () -> Unit,
 ) {
     LazyColumn(
         contentPadding = remember { PaddingValues(horizontal = 16.dp) },
-        modifier = modifier.navigationBarsPadding(bottom = false, start = true, end = true)
+        modifier = modifier
+            .fillMaxSize()
+            .navigationBarsPadding(bottom = false, start = true, end = true)
     ) {
         solutions
             .groupBy { solution -> solution.firstDepartureDateTime.date }
@@ -146,6 +153,15 @@ private fun TrainsList(
                     onClick = onLoadMoreResultsClick
                 )
                 Spacer(Modifier.navigationBarsHeight(additional = 8.dp))
+            }
+        } else {
+            item {
+                RetrySearch(
+                    onClick = retrySearch,
+                    modifier = Modifier
+                        .fillParentMaxSize()
+                        .navigationBarsPadding()
+                )
             }
         }
     }
@@ -197,5 +213,24 @@ private fun LoadMoreResultsButton(isLoading: Boolean, onClick: () -> Unit) {
             )
         }
         Text(text = "Load more results")
+    }
+}
+
+@Composable
+private fun RetrySearch(modifier: Modifier, onClick: () -> Unit) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "No results found\n\uD83D\uDE41",
+            style = MaterialTheme.typography.displaySmall,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(32.dp))
+        Button(onClick = onClick) {
+            Text(text = "Retry")
+        }
     }
 }

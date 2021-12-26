@@ -22,7 +22,8 @@ fun SearchTrainsRoute(
             arrivalStation = viewModelState.arrivalStation,
             recentStationSearches = viewModelState.recentStationSearches,
             departureDateTime = viewModelState.departureDateTime,
-            isSearchAllowed = viewModelState.isSearchTrainsAllowed
+            isSearchAllowed = viewModelState.isSearchTrainsAllowed,
+            isConnectedToNetwork = viewModelState.isConnectedToNetwork,
         )
     }
 

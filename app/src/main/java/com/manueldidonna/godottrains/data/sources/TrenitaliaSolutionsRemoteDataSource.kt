@@ -48,7 +48,7 @@ class TrenitaliaSolutionsRemoteDataSource @Inject constructor(private val client
                     )
                 }
         } catch (e: Exception) {
-            Log.d("Get solutions", e.toString())
+            Log.e("Get solutions", e.toString())
             return emptyList()
         }
     }

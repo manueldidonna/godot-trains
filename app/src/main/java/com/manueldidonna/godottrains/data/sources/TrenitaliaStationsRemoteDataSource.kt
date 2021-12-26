@@ -23,7 +23,7 @@ class TrenitaliaStationsRemoteDataSource @Inject constructor(private val client:
                     )
                 }
         } catch (e: Exception) {
-            Log.d("Get stations", e.toString())
+            Log.e("Get stations", e.toString())
             return emptyList()
         }
     }

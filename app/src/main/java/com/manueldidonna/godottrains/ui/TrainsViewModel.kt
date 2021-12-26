@@ -22,12 +22,10 @@ import com.manueldidonna.godottrains.data.models.OneWaySolution
 import com.manueldidonna.godottrains.data.models.Station
 import com.manueldidonna.godottrains.data.repositories.SolutionsRepository
 import com.manueldidonna.godottrains.data.repositories.StationsRepository
+import com.manueldidonna.godottrains.domain.CheckNetworkStatusUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.datetime.*
@@ -44,16 +42,21 @@ data class TrainsViewModelState(
     val isLoadingMoreSolutions: Boolean = false,
     val stationSearchResults: List<Station> = emptyList(),
     val isSearchingStations: Boolean = false,
+    val isConnectedToNetwork: Boolean = true
 )
 
 val TrainsViewModelState.isSearchTrainsAllowed: Boolean
-    get() = departureStation != null && arrivalStation != null && arrivalStation != departureStation
+    get() = isConnectedToNetwork && departureStation != null && arrivalStation != null && arrivalStation != departureStation
 
 @HiltViewModel
 class TrainsViewModel @Inject constructor(
     private val stationsRepository: StationsRepository,
-    private val solutionsRepository: SolutionsRepository
+    private val solutionsRepository: SolutionsRepository,
+    private val checkNetworkStatus: CheckNetworkStatusUseCase
 ) : ViewModel() {
+
+    private val _viewModelState = MutableStateFlow(TrainsViewModelState())
+    val viewModelState = _viewModelState.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -61,10 +64,12 @@ class TrainsViewModel @Inject constructor(
                 _viewModelState.update { it.copy(recentStationSearches = stations) }
             }
         }
+        viewModelScope.launch {
+            checkNetworkStatus.isConnectedToNetwork().collect { connected ->
+                _viewModelState.update { it.copy(isConnectedToNetwork = connected) }
+            }
+        }
     }
-
-    private val _viewModelState = MutableStateFlow(TrainsViewModelState())
-    val viewModelState = _viewModelState.asStateFlow()
 
     fun setArrivalStation(station: Station?) {
         saveRecentStationSearch(station)

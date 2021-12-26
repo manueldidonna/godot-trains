@@ -1,9 +1,8 @@
 package com.manueldidonna.godottrains.ui.searchstation
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import android.widget.Toast
+import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
 import com.manueldidonna.godottrains.ui.TrainsViewModel
 
 @Composable
@@ -13,6 +12,11 @@ fun SearchStationRoute(
     onNavigationUp: () -> Unit
 ) {
     val viewModelState by viewModel.viewModelState.collectAsState()
+
+    NavigateUpOnConnectionLost(
+        isConnectedToNetwork = viewModelState.isConnectedToNetwork,
+        onNavigationUp = onNavigationUp
+    )
 
     val state = remember(viewModelState) {
         SearchStationUiState(
@@ -33,4 +37,16 @@ fun SearchStationRoute(
             onNavigationUp()
         }
     )
+}
+
+@Composable
+private fun NavigateUpOnConnectionLost(isConnectedToNetwork: Boolean, onNavigationUp: () -> Unit) {
+    val updatedOnNavigationUp by rememberUpdatedState(onNavigationUp)
+    val context = LocalContext.current
+    LaunchedEffect(isConnectedToNetwork, context) {
+        if (!isConnectedToNetwork) {
+            updatedOnNavigationUp()
+            Toast.makeText(context, "No internet connection", Toast.LENGTH_SHORT).show()
+        }
+    }
 }
