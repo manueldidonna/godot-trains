@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Godot Trains</string>
+    <string name="navigate_up_action">Naviga indietro</string>
+    <string name="travel_time_in_minutes_template">Tempo di viaggio %1$d min</string>
+    <string name="no_results_found_error">Nessun risultato trovato\n🙁</string>
+    <string name="retry_button_text">Riprova</string>
+    <string name="load_more_results_button_text">Carica altri risultati</string>
+    <string name="time_tomorrow">Domani</string>
+    <string name="time_today">Oggi</string>
+    <string name="search_results_app_bar_title">Risultati</string>
+    <string name="recent_searches_label">Ricerche recenti</string>
+    <string name="search_arrival_station_hint">Cerca stazione di arrivo</string>
+    <string name="search_departure_station_hint">Cerca stazione di partenza</string>
+    <string name="choose_station_hint">Scegli la stazione</string>
+    <string name="select_prev_month_action">Seleziona mese precedente</string>
+    <string name="select_next_month_action">Seleziona mese prossimo</string>
+    <string name="cancel_station_selection_action">Annulla la selezione della stazione</string>
+    <string name="no_internet_connection">Nessuna connessione a internet</string>
+    <string name="departure_date_label">Data della partenza</string>
+    <string name="arrival_station_label">Stazione di arrivo</string>
+    <string name="departure_station_label">Stazione di partenza</string>
+    <string name="search_trains_app_bar_title">Ricerca</string>
+</resources>
