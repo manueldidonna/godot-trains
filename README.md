@@ -1,29 +1,34 @@
 # Godot Trains
-
-Godot Trains is an Android app to search for train times in Italy.
-
+<img src="art/logo.png?raw=true">
 <img src="art/banner.png?raw=true">
 
-:rocket: [Download APK](https://github.com/manueldidonna/godot-trains/releases)
+Godot Trains is an app to search for train times in Italy.
 
-## :man_technologist: Android Development
+### Supported railway lines
+- Trenitalia
+- EAV
+
+## Download
+Get the app from the [Releases page](https://github.com/manueldidonna/godot-trains/releases)
+
+## Android Development
+Here is a summary of the libraries used to build the app
 - Entirely written in [Kotlin](https://kotlinlang.org/)
 - UI built with [Jetpack Compose](https://developer.android.com/jetpack/compose)
 - Data persistence with [SQLDelight](https://github.com/cashapp/sqldelight)
 - Date and time with [kotlinx-datetime](https://github.com/Kotlin/kotlinx-datetime)
 - HTTP networking with [Ktor](https://ktor.io) and [kotlinx-serialization](https://github.com/Kotlin/kotlinx.serialization)
+- Dependency injection with [Hilt](https://dagger.dev/hilt/)
 
 
-## ⚠️ Disclaimer
-
+## Disclaimer
 ```
 🇮🇹 I contenuti di questa repo sono a solo scopo informativo e frutto di studi personali
 
 🇬🇧 The contents of this repo are for informative purposes only and the result of personal studies
 ```
 
-## :scroll: License
-
+## License
 ```
 Copyright (C) 2021 Manuel Di Donna
 
