@@ -3,6 +3,8 @@ package com.manueldidonna.godottrains.ui.searchstation
 import android.widget.Toast
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.manueldidonna.godottrains.R
 import com.manueldidonna.godottrains.ui.TrainsViewModel
 
 @Composable
@@ -23,7 +25,7 @@ fun SearchStationRoute(
             recentSearches = viewModelState.recentStationSearches,
             searchResults = viewModelState.stationSearchResults,
             isSearchingStations = viewModelState.isSearchingStations,
-            searchHint = if (searchForDeparture) "Search departure station" else "Search arrival station"
+            searchForDepartureStation = searchForDeparture
         )
     }
 

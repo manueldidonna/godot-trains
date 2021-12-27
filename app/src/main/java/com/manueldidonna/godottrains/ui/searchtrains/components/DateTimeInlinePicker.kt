@@ -19,8 +19,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.manueldidonna.godottrains.R
 import com.manueldidonna.godottrains.ThemeShapes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
@@ -206,7 +208,7 @@ private fun YearMonthStepper(
         IconButton(onClick = onPreviousButtonClick) {
             Icon(
                 imageVector = Icons.Filled.ChevronLeft,
-                contentDescription = "Select previous month"
+                contentDescription = stringResource(id = R.string.select_prev_month_action)
             )
         }
         Text(
@@ -218,7 +220,7 @@ private fun YearMonthStepper(
         IconButton(onClick = onNextButtonClick) {
             Icon(
                 imageVector = Icons.Filled.ChevronRight,
-                contentDescription = "Select next month"
+                contentDescription = stringResource(id = R.string.select_next_month_action)
             )
         }
     }

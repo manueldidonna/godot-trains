@@ -32,11 +32,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.insets.navigationBarsHeight
 import com.google.accompanist.insets.navigationBarsPadding
 import com.google.accompanist.insets.statusBarsPadding
+import com.manueldidonna.godottrains.R
 import com.manueldidonna.godottrains.data.models.OneWaySolution
 import com.manueldidonna.godottrains.data.models.firstDepartureDateTime
 import com.manueldidonna.godottrains.ui.searchresults.components.OneWaySolutionCard
@@ -88,12 +91,12 @@ private fun SearchResultsAppBar(
         modifier = Modifier
             .statusBarsPadding()
             .navigationBarsPadding(bottom = false, start = true, end = true),
-        title = { Text("Search results") },
+        title = { Text(text = stringResource(id = R.string.search_results_app_bar_title)) },
         navigationIcon = {
             IconButton(onClick = onNavigationUp) {
                 Icon(
                     imageVector = Icons.Filled.ArrowBack,
-                    contentDescription = "Go back"
+                    contentDescription = stringResource(id = R.string.navigate_up_action)
                 )
             }
         },
@@ -170,11 +173,12 @@ private fun TrainsList(
 @Composable
 private fun TrainsGroupHeader(departureDate: LocalDate) {
     val configuration = LocalConfiguration.current
-    val dayFullName = remember(configuration, departureDate) {
+    val resources = LocalContext.current.resources
+    val dayFullName = remember(configuration, departureDate, resources) {
         val today = Clock.System.todayAt(TimeZone.currentSystemDefault())
         when (departureDate) {
-            today -> "Today"
-            today.plus(1, DateTimeUnit.DAY) -> "Tomorrow"
+            today -> resources.getString(R.string.time_today)
+            today.plus(1, DateTimeUnit.DAY) -> resources.getString(R.string.time_tomorrow)
             else -> {
                 val locale = configuration.locales.get(0)
                 val dayOfWeek = departureDate.dayOfWeek
@@ -212,7 +216,7 @@ private fun LoadMoreResultsButton(isLoading: Boolean, onClick: () -> Unit) {
                     .size(16.dp)
             )
         }
-        Text(text = "Load more results")
+        Text(text = stringResource(id = R.string.load_more_results_button_text))
     }
 }
 
@@ -224,13 +228,13 @@ private fun RetrySearch(modifier: Modifier, onClick: () -> Unit) {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "No results found\n\uD83D\uDE41",
+            text = stringResource(id = R.string.no_results_found_error),
             style = MaterialTheme.typography.displaySmall,
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(32.dp))
         Button(onClick = onClick) {
-            Text(text = "Retry")
+            Text(text = stringResource(id = R.string.retry_button_text))
         }
     }
 }

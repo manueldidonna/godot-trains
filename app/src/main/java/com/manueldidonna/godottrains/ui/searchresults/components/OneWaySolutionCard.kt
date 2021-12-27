@@ -31,10 +31,12 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.manueldidonna.godottrains.GodotTrainsTheme
+import com.manueldidonna.godottrains.R
 import com.manueldidonna.godottrains.ThemeShapes
 import com.manueldidonna.godottrains.data.models.OneWaySolution
 import com.manueldidonna.godottrains.data.models.Train
@@ -190,10 +192,10 @@ private fun TravelTimeLabel(timeInMinutes: Int) {
         Icon(
             imageVector = Icons.Filled.Timelapse,
             modifier = Modifier.padding(end = 12.dp),
-            contentDescription = "Travel time",
+            contentDescription = null,
         )
         Text(
-            text = "Travel Time $timeInMinutes min",
+            text = stringResource(id = R.string.travel_time_in_minutes_template, timeInMinutes),
             style = MaterialTheme.typography.labelMedium,
         )
     }

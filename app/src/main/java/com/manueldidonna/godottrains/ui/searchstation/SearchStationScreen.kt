@@ -40,6 +40,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
@@ -47,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.google.accompanist.insets.*
 import com.manueldidonna.godottrains.GodotTrainsTheme
+import com.manueldidonna.godottrains.R
 import com.manueldidonna.godottrains.ThemeShapes
 import com.manueldidonna.godottrains.data.models.Station
 
@@ -79,8 +81,12 @@ fun SearchStationScreen(
                 if (state.searchResults.isEmpty()) focusRequester.requestFocus()
             }
 
+            val hintStringResource =
+                if (state.searchForDepartureStation) stringResource(id = R.string.search_departure_station_hint)
+                else stringResource(id = R.string.search_arrival_station_hint)
+
             SearchStationAppBar(
-                hint = state.searchHint,
+                hint = hintStringResource,
                 query = query,
                 onQueryChange = setQuery,
                 onBackArrowClick = onNavigationUp,
@@ -150,7 +156,10 @@ private fun SearchStationAppBar(
                 onClick = onBackArrowClick,
                 modifier = Modifier.padding(start = 4.dp, end = 4.dp)
             ) {
-                Icon(Icons.Filled.ArrowBack, contentDescription = "Go back")
+                Icon(
+                    Icons.Filled.ArrowBack,
+                    contentDescription = stringResource(id = R.string.navigate_up_action)
+                )
             }
             Box(modifier = Modifier.weight(1f)) {
                 if (query.text.isEmpty()) {
@@ -192,7 +201,7 @@ private fun RecentSearches(recentResults: List<Station>, onClick: (Station) -> U
     Column {
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "Recent searches",
+            text = stringResource(id = R.string.recent_searches_label),
             style = MaterialTheme.typography.titleSmall,
             modifier = Modifier.padding(horizontal = 16.dp)
         )

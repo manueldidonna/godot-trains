@@ -44,10 +44,12 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.navigationBarsPadding
+import com.manueldidonna.godottrains.R
 import com.manueldidonna.godottrains.ThemeShapes
 import com.manueldidonna.godottrains.data.models.Station
 import com.manueldidonna.godottrains.ui.searchtrains.components.DateTimeInlinePicker
@@ -104,14 +106,14 @@ fun SearchTrainsScreen(
                 verticalArrangement = Arrangement.spacedBy(32.dp)
             ) {
                 StationField(
-                    label = "Departure station",
+                    label = stringResource(id = R.string.departure_station_label),
                     stationName = state.departureStation?.name,
                     onClick = searchDepartureStation,
                     recentStationSearches = state.recentStationSearches,
                     onStationSelection = setDepartureStation
                 )
                 StationField(
-                    label = "Arrival station",
+                    label = stringResource(id = R.string.arrival_station_label),
                     stationName = state.arrivalStation?.name,
                     onClick = searchArrivalStation,
                     recentStationSearches = state.recentStationSearches,
@@ -121,7 +123,10 @@ fun SearchTrainsScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(imageVector = Icons.Filled.CalendarToday, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = "Departure date", style = MaterialTheme.typography.titleSmall)
+                        Text(
+                            text = stringResource(id = R.string.departure_date_label),
+                            style = MaterialTheme.typography.titleSmall
+                        )
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     DateTimeInlinePicker(
@@ -167,7 +172,7 @@ private fun StationField(
                 Spacer(modifier = Modifier.width(24.dp))
                 if (stationName.isNullOrEmpty()) {
                     Text(
-                        text = "Choose station",
+                        text = stringResource(id = R.string.choose_station_hint),
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = ContentAlpha.medium),
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier
@@ -185,7 +190,7 @@ private fun StationField(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Close,
-                            contentDescription = "Cancel station selection",
+                            contentDescription = stringResource(id = R.string.cancel_station_selection_action),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -302,7 +307,7 @@ private fun SearchAppBar(
                     .zIndex(8f)
             ) {
                 Text(
-                    text = "No internet connections",
+                    text = stringResource(id = R.string.no_internet_connection),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onErrorContainer,
                     modifier = Modifier
@@ -318,7 +323,7 @@ private fun SearchAppBar(
 
         SmallTopAppBar(
             modifier = Modifier.navigationBarsPadding(bottom = false, start = true, end = true),
-            title = { Text("Search") },
+            title = { Text(text = stringResource(id = R.string.search_trains_app_bar_title)) },
             scrollBehavior = scrollBehavior
         )
     }
