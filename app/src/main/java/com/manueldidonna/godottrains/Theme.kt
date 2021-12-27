@@ -19,9 +19,12 @@ package com.manueldidonna.godottrains
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Colors
+import androidx.compose.material.darkColors
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -48,8 +51,12 @@ fun GodotTrainsTheme(
         else -> LightColorScheme
     }
 
+    val legacyColorPalette = remember(colorScheme, darkTheme) {
+        legacyColorPalette(colorScheme, isLight = !darkTheme)
+    }
+
     MaterialTheme(colorScheme = colorScheme) {
-        MaterialTheme2(content = content)
+        MaterialTheme2(colors = legacyColorPalette, content = content)
     }
 }
 
@@ -124,4 +131,20 @@ private val DarkColorScheme = darkColorScheme(
     inverseOnSurface = Color(0xFF1a1c19),
     inverseSurface = Color(0xFFe2e3dc),
     inversePrimary = Color(0xFF216c21),
+)
+
+private fun legacyColorPalette(colorScheme: ColorScheme, isLight: Boolean) = Colors(
+    primary = colorScheme.primary,
+    onPrimary = colorScheme.onPrimary,
+    primaryVariant = colorScheme.primary,
+    secondary = colorScheme.secondary,
+    onSecondary = colorScheme.onSecondary,
+    secondaryVariant = colorScheme.secondary,
+    background = colorScheme.background,
+    onBackground = colorScheme.onBackground,
+    surface = colorScheme.surface,
+    onSurface = colorScheme.onSurface,
+    error = colorScheme.error,
+    onError = colorScheme.onError,
+    isLight = isLight
 )
