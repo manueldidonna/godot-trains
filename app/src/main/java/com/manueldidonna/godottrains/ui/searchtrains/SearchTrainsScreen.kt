@@ -22,6 +22,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -32,19 +33,18 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.google.accompanist.insets.LocalWindowInsets
@@ -55,7 +55,7 @@ import com.manueldidonna.godottrains.data.models.Station
 import com.manueldidonna.godottrains.ui.searchtrains.components.DateTimeInlinePicker
 import kotlinx.datetime.LocalDateTime
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun SearchTrainsScreen(
     state: SearchTrainsUiState,
@@ -73,8 +73,8 @@ fun SearchTrainsScreen(
             modifier = Modifier
                 .zIndex(8f)
                 .align(Alignment.BottomEnd),
-            enter = fadeIn(tween(220)),
-            exit = fadeOut(tween(180))
+            enter = fadeIn(tween(220)) + scaleIn(tween(220), initialScale = 0.6f),
+            exit = fadeOut(tween(180)) + scaleOut(tween(180), targetScale = 0.6f)
         ) {
             LargeFloatingActionButton(
                 onClick = searchOneWaySolutions,
@@ -109,14 +109,14 @@ fun SearchTrainsScreen(
                     label = stringResource(id = R.string.departure_station_label),
                     stationName = state.departureStation?.name,
                     onClick = searchDepartureStation,
-                    recentStationSearches = state.recentStationSearches,
+                    recentStationSearches = state.orderedRecentStationSearches,
                     onStationSelection = setDepartureStation
                 )
                 StationField(
                     label = stringResource(id = R.string.arrival_station_label),
                     stationName = state.arrivalStation?.name,
                     onClick = searchArrivalStation,
-                    recentStationSearches = state.recentStationSearches,
+                    recentStationSearches = state.orderedRecentStationSearches,
                     onStationSelection = setArrivalStation
                 )
                 Column {
@@ -149,6 +149,13 @@ private fun StationField(
     onClick: () -> Unit,
     onStationSelection: (Station?) -> Unit
 ) {
+    val scrollThreshold = with(LocalDensity.current) { 104.dp.toPx() }
+    val showRecentSearches = stationName.isNullOrEmpty() && recentStationSearches.isNotEmpty()
+
+    // The Recent searches carousel is removed from the composition when showRecentSearches = false
+    // so recreate the tracker when the composable state resets
+    val scrollTracker = remember(showRecentSearches) { ScrollTrackerNestedScrollConnection() }
+
     Column {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(imageVector = Icons.Filled.Place, contentDescription = null)
@@ -162,20 +169,23 @@ private fun StationField(
                 .height(64.dp)
                 .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                 .clip(CircleShape)
+                .clickable(onClick = onClick),
+            contentAlignment = Alignment.CenterStart
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clickable(onClick = onClick)
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Spacer(modifier = Modifier.width(24.dp))
                 if (stationName.isNullOrEmpty()) {
                     Text(
                         text = stringResource(id = R.string.choose_station_hint),
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = ContentAlpha.medium),
                         style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier
+                        modifier = Modifier.graphicsLayer {
+                            clip = true
+                            alpha = 1f - (scrollTracker.scrolledWidth / scrollThreshold).coerceIn(
+                                0f,
+                                1f
+                            )
+                        }
                     )
                 } else {
                     Text(
@@ -197,80 +207,75 @@ private fun StationField(
                 }
             }
 
+            val recentStationsAnimationSpec = remember {
+                spring<IntOffset>(
+                    dampingRatio = Spring.DampingRatioLowBouncy,
+                    stiffness = Spring.StiffnessMediumLow
+                )
+            }
+
             androidx.compose.animation.AnimatedVisibility(
-                visible = stationName.isNullOrEmpty() && recentStationSearches.isNotEmpty(),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clickable(onClick = onClick),
+                visible = showRecentSearches,
+                modifier = Modifier.fillMaxSize(),
                 enter = slideInHorizontally(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioLowBouncy,
-                        stiffness = Spring.StiffnessMediumLow
-                    ),
+                    animationSpec = recentStationsAnimationSpec,
                     initialOffsetX = { it }
                 ),
                 exit = slideOutHorizontally(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioNoBouncy,
-                        stiffness = Spring.StiffnessMedium
-                    ),
+                    animationSpec = recentStationsAnimationSpec,
                     targetOffsetX = { it }
                 )
             ) {
                 RecentStationsRow(
                     stations = recentStationSearches,
-                    onSelection = onStationSelection
+                    onSelection = onStationSelection,
+                    nestedScrollConnection = scrollTracker
                 )
             }
         }
+    }
+}
+
+private class ScrollTrackerNestedScrollConnection(
+    initialScrolledWidthValue: Float = 0f
+) : NestedScrollConnection {
+    var scrolledWidth: Float by mutableStateOf(initialScrolledWidthValue)
+        private set
+
+    override fun onPostScroll(
+        consumed: Offset,
+        available: Offset,
+        source: NestedScrollSource
+    ): Offset {
+        scrolledWidth -= consumed.x
+        return Offset.Zero
     }
 }
 
 @Composable
 private fun RecentStationsRow(
+    nestedScrollConnection: NestedScrollConnection,
     stations: List<Station>,
     onSelection: (Station) -> Unit
 ) {
-    val scrolledWidth = rememberSaveable { mutableStateOf(0f) }
-    val scrolledWidthThreshold = with(LocalDensity.current) { 104.dp.toPx() }
-
-    val nestedScrollConnection = remember {
-        object : NestedScrollConnection {
-            override fun onPostScroll(
-                consumed: Offset,
-                available: Offset,
-                source: NestedScrollSource
-            ): Offset {
-                scrolledWidth.value = (scrolledWidth.value - consumed.x)
-                    .coerceIn(0f, scrolledWidthThreshold)
-                return Offset.Zero
-            }
-        }
-    }
-
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.End),
         contentPadding = remember { PaddingValues(start = 200.dp, end = 24.dp) },
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .nestedScroll(nestedScrollConnection)
-            .background(
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(
-                    alpha = (scrolledWidth.value / scrolledWidthThreshold)
-                )
-            )
+        modifier = Modifier.nestedScroll(nestedScrollConnection)
     ) {
         items(stations) { station ->
             RecentStationSearchChip(
                 text = station.name,
-                onClick = { onSelection(station) }
+                onClick = { onSelection(station) },
             )
         }
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun RecentStationSearchChip(text: String, onClick: () -> Unit) {
+private fun LazyItemScope.RecentStationSearchChip(text: String, onClick: () -> Unit) {
     Text(
         text = text,
         style = MaterialTheme.typography.labelLarge,
@@ -283,6 +288,7 @@ private fun RecentStationSearchChip(text: String, onClick: () -> Unit) {
             .height(32.dp)
             .wrapContentHeight()
             .padding(horizontal = 16.dp)
+            .animateItemPlacement()
     )
 }
 

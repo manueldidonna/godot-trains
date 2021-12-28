@@ -7,7 +7,15 @@ data class SearchTrainsUiState(
     val departureStation: Station?,
     val arrivalStation: Station?,
     val departureDateTime: LocalDateTime,
-    val recentStationSearches: List<Station>,
+    private val recentStationSearches: List<Station>,
     val isSearchAllowed: Boolean,
     val isConnectedToNetwork: Boolean
-)
+) {
+    val orderedRecentStationSearches: List<Station> by lazy {
+        if (departureStation == null && arrivalStation == null) {
+            recentStationSearches
+        } else {
+            recentStationSearches.sortedByDescending { it.id != departureStation?.id && it.id != arrivalStation?.id }
+        }
+    }
+}

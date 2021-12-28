@@ -197,7 +197,7 @@ private fun YearMonthStepper(
         val month = yearMonth.month
             .getDisplayName(TextStyle.FULL, Locale.getDefault())
             .replaceFirstChar { it.titlecase(Locale.getDefault()) }
-        "$month, ${yearMonth.year}"
+        "$month ${yearMonth.year}"
     }
 
     Row(
@@ -323,16 +323,17 @@ private fun CalendarRow(
 
 @Composable
 private fun CalendarCell(day: String, selected: Boolean, onSelectionChange: () -> Unit) {
+    val colorScheme = MaterialTheme.colorScheme
     val conditionalCellModifier =
         if (day.isNotEmpty()) Modifier
-            .run { if (selected) background(MaterialTheme.colorScheme.secondaryContainer) else this }
+            .run { if (selected) background(colorScheme.secondaryContainer) else this }
             .clickable(onClick = onSelectionChange)
             .wrapContentSize()
         else Modifier
     Text(
         text = day,
         style = MaterialTheme.typography.labelLarge,
-        color = if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSecondaryContainer,
+        color = if (selected) colorScheme.onSecondaryContainer else colorScheme.onSurface,
         modifier = Modifier
             .size(width = CellWidth, height = CellHeight)
             .clip(ThemeShapes.Chip)
