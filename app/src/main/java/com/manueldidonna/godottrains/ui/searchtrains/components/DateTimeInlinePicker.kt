@@ -101,9 +101,18 @@ private fun TimesRow(selection: LocalDateTime, onSelectionChange: (LocalDateTime
     val listState = rememberLazyListState()
     LaunchedEffect(selectedLocalTime) {
         val itemIndex = selectedLocalTime.hour - 6
-        val visibleItemsInfo = listState.layoutInfo.visibleItemsInfo
-        if (itemIndex !in visibleItemsInfo.first().index..visibleItemsInfo.last().index) {
+        val layoutInfo = listState.layoutInfo
+        val visibleItemsInfo = layoutInfo.visibleItemsInfo
+        val firstVisibleItemIndex = visibleItemsInfo.first().index
+        if (itemIndex !in firstVisibleItemIndex..visibleItemsInfo.last().index) {
             listState.scrollToItem(itemIndex)
+        } else {
+            val item = visibleItemsInfo[itemIndex - firstVisibleItemIndex]
+            val fullyVisible = item.offset >= layoutInfo.viewportStartOffset
+                    && item.offset + item.size <= layoutInfo.viewportEndOffset
+            if (!fullyVisible) {
+                listState.animateScrollToItem(item.index)
+            }
         }
     }
 
